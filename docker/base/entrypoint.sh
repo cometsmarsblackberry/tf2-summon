@@ -37,7 +37,8 @@ faketty() {
 
 quit() {
   echo "*** Stopping ***"
-  "${SERVER_DIR}/rcon" -H "${IP/0.0.0.0/127.0.0.1}" -p "${PORT}" -P "${RCON_PASSWORD}" quit
+  # The pinned client sends the command but returns nonzero in no-wait mode.
+  "${SERVER_DIR}/rcon" -H "${IP/0.0.0.0/127.0.0.1}" -p "${PORT}" -P "${RCON_PASSWORD}" --nowait quit || true
   sleep 5
   exit 0
 }
