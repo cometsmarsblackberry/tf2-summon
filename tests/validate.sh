@@ -43,13 +43,18 @@ grep -Fq 'tf2-summon-base = "target:base"' docker-bake.hcl
 grep -Fq 'tf2-summon-sourcemod = "target:sourcemod"' docker-bake.hcl
 grep -Fq 'tf2-summon-plugins = "target:plugins"' docker-bake.hcl
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "Repository validation requires ripgrep (rg)" >&2
-  exit 1
+if command -v rg >/dev/null 2>&1; then
+  search_repository() {
+    rg -a -n -i --hidden --glob '!.git/**' --fixed-strings "$1" .
+  }
+else
+  search_repository() {
+    grep -R -a -n -i -F --exclude-dir=.git -- "$1" .
+  }
 fi
 
 for name in "tf2-"{"server","servers"} "source-""server-""plugins"; do
-  if rg -a -n -i --hidden --glob '!.git/**' --fixed-strings "${name}" .; then
+  if search_repository "${name}"; then
     echo "Forbidden repository reference found: ${name}" >&2
     exit 1
   fi
