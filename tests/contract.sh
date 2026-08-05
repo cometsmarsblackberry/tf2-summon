@@ -8,6 +8,19 @@ summon_exact="${SUMMON_EXACT:-0}"
 rcon_password="summon-rcon-test"
 wait_status_file=""
 
+report_failure() {
+  local status="$1"
+  local line="$2"
+  local command="$3"
+
+  trap - ERR
+  echo "Image contract failed with status ${status} at line ${line}: ${command}" >&2
+  if "${container_runtime}" container inspect "${container_name}" >/dev/null 2>&1; then
+    "${container_runtime}" logs "${container_name}" >&2 || true
+  fi
+  exit "${status}"
+}
+
 case "${summon_exact}" in
   0)
     port_args=(-p 27015/tcp -p 27015/udp -p 27020/udp)
@@ -34,6 +47,7 @@ cleanup() {
     rm -f "${wait_status_file}"
   fi
 }
+trap 'report_failure "$?" "$LINENO" "$BASH_COMMAND"' ERR
 trap cleanup EXIT
 
 test "$("${container_runtime}" image inspect --format '{{.Config.User}}' "${image_name}")" = "tf2"
@@ -45,6 +59,7 @@ test "$("${container_runtime}" image inspect --format '{{json .Config.Cmd}}' "${
 # shellcheck disable=SC2016
 "${container_runtime}" run --rm --entrypoint bash "${image_name}" -lc '
   set -Eeuo pipefail
+  trap "status=\$?; echo \"Static image contract failed at line \${LINENO}: \${BASH_COMMAND}\" >&2; exit \${status}" ERR
 
   test -x /home/tf2/server/rcon
   test -d /home/tf2/server/tf
@@ -136,6 +151,7 @@ grep -Fqi 'Map Downloader' <<<"${plugin_output}"
 # shellcheck disable=SC2016
 "${container_runtime}" exec "${container_name}" bash -lc '
   set -Eeuo pipefail
+  trap "status=\$?; echo \"Runtime configuration contract failed at line \${LINENO}: \${BASH_COMMAND}\" >&2; exit \${status}" ERR
   grep -Fq "hostname \"Summon Contract Test\"" /home/tf2/server/tf/cfg/server.cfg
   grep -Fq "rcon_password \"summon-rcon-test\"" /home/tf2/server/tf/cfg/server.cfg
   grep -Fq "tv_name \"SourceTV\"" /home/tf2/server/tf/cfg/server.cfg
