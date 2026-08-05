@@ -1,0 +1,43 @@
+// Server configuration for tf2-summon
+// Customize these values as needed
+
+hostname "${SERVER_HOSTNAME}"
+rcon_password "${RCON_PASSWORD}"
+sv_password "${SERVER_PASSWORD}"
+
+// Logging
+sv_logflush 1
+log on
+
+// Network
+sv_minrate 0
+sv_maxrate 0
+sv_minupdaterate 66
+sv_maxupdaterate 66
+sv_mincmdrate 66
+sv_maxcmdrate 66
+
+// Download URL
+sv_downloadurl "${DOWNLOAD_URL}"
+sv_allowdownload 1
+sv_allowupload 1
+
+// Map Downloader
+sm_cvar sm_map_download_base "${SM_MAP_DOWNLOAD_BASE}"
+
+// SourceTV
+tv_enable 1
+tv_name "${STV_NAME}"
+tv_title "${STV_TITLE}"
+tv_password "${STV_PASSWORD}"
+tv_maxclients 32
+tv_delay 90
+tv_delaymapchange 1
+
+// Logs & Demos
+logstf_apikey "${LOGS_TF_APIKEY}"
+sm_demostf_apikey "${DEMOS_TF_APIKEY}"
+recordstv_path "demos"
+
+motdfile "${MOTD}"
+motdfile_text "${MOTD_TEXT}"

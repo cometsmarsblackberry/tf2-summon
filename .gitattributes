@@ -1,0 +1,3 @@
+# Competitive configuration payloads retain their upstream line endings and spacing.
+cfg/*.cfg -whitespace
+cfg/**/*.cfg -whitespace
