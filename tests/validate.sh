@@ -15,7 +15,8 @@ required_files=(
   docker/base/server.cfg.template
   docker/base/tf2.txt.template
   docker/sourcemod/Dockerfile
-  docker/plugins/Dockerfile
+  docker/core-addons/Dockerfile
+  docker/competitive-assets/Dockerfile
   cfg/server.cfg.template
   cfg/summon_reset.cfg
   plugins/autoreload.smx
@@ -37,11 +38,13 @@ printf '%s  %s\n' \
   | sha256sum -c -
 
 grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
-grep -Fqx 'FROM tf2-summon-sourcemod' docker/plugins/Dockerfile
-grep -Fqx 'FROM tf2-summon-plugins' Dockerfile
+grep -Fqx 'FROM tf2-summon-sourcemod' docker/core-addons/Dockerfile
+grep -Fqx 'FROM tf2-summon-core-addons' docker/competitive-assets/Dockerfile
+grep -Fqx 'FROM tf2-summon-competitive-assets' Dockerfile
 grep -Fq 'tf2-summon-base = "target:base"' docker-bake.hcl
 grep -Fq 'tf2-summon-sourcemod = "target:sourcemod"' docker-bake.hcl
-grep -Fq 'tf2-summon-plugins = "target:plugins"' docker-bake.hcl
+grep -Fq 'tf2-summon-core-addons = "target:core-addons"' docker-bake.hcl
+grep -Fq 'tf2-summon-competitive-assets = "target:competitive-assets"' docker-bake.hcl
 grep -Fq 'target "image-amd64"' docker-bake.hcl
 grep -Fq 'SRCDS_EXEC      = "srcds_run_64"' docker-bake.hcl
 grep -Fq 'TF2_SERVER_ARCH = "amd64"' docker-bake.hcl

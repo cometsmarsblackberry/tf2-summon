@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS plugins
+FROM ubuntu:22.04 AS sourcemod-downloads
 WORKDIR /download
 ARG INSTALL_DIR=/server/tf
 RUN mkdir -p "${INSTALL_DIR}"
@@ -20,4 +20,4 @@ RUN tar xf "${SOURCEMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
 FROM tf2-summon-base
 
 ARG INSTALL_DIR=/server/tf
-COPY --from=plugins --chown=tf2 "${INSTALL_DIR}/" "${SERVER_DIR}/tf/"
+COPY --from=sourcemod-downloads --chown=tf2 "${INSTALL_DIR}/" "${SERVER_DIR}/tf/"
