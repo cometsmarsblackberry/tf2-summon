@@ -77,6 +77,13 @@ including the RCON client at `/home/tf2/server/rcon` and game files at
 Docker Buildx 0.17 or newer is required because the build uses local target
 contexts to keep every layer in this repository:
 
+`base` → `sourcemod` → `core-addons` → `competitive-assets` → final image
+
+The core addons target contains general-purpose SourceMod extensions and
+plugins. The competitive assets target adds league configs, game modes, and
+match integrations. The root Dockerfile applies only the Summon-specific
+plugins, configuration, metadata, and runtime policy.
+
 ```bash
 docker buildx bake image image-amd64 --load
 tests/validate.sh

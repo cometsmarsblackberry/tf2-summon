@@ -1,4 +1,5 @@
-FROM ubuntu:22.04 AS plugins
+FROM ubuntu:22.04 AS downloaded-addons
+# General-purpose SourceMod plugins and native extensions shared by all images.
 SHELL ["/bin/bash", "-c"]
 RUN export DEBIAN_FRONTEND=noninteractive \
     && export TZ=Etc/UTC \
@@ -58,14 +59,6 @@ RUN tar xzf "${STEAMWORKS_FILE_NAME}" -C "${PLUGIN_INSTALL_DIR}/"
 # ARG SYSTEM2_URL=https://github.com/dordnung/System2/releases/download/${SYSTEM2_VERSION}/${SYSTEM2_FILE_NAME}
 # ADD ${SYSTEM2_URL} .
 # RUN unzip -q -o "${SYSTEM2_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
-
-# Map Downloader (pinned to commit)
-ARG MAPDOWNLOADER_COMMIT=729db2ea9e7f353ca67d2c7c19e1cd1dc473928c
-ARG MAPDOWNLOADER_PLUGIN_FILE_NAME=mapdownloader.smx
-ARG MAPDOWNLOADER_PLUGIN_URL=https://github.com/spiretf/mapdownloader/raw/${MAPDOWNLOADER_COMMIT}/plugin/${MAPDOWNLOADER_PLUGIN_FILE_NAME}
-ARG MAPDOWNLOADER_PLUGIN_CHECKSUM=53d4a64d40a939837dd3dfbf41aa3e682c421da44efb4f16c3db397aa2901ed2
-ADD --checksum=sha256:${MAPDOWNLOADER_PLUGIN_CHECKSUM} ${MAPDOWNLOADER_PLUGIN_URL} .
-RUN cp "${MAPDOWNLOADER_PLUGIN_FILE_NAME}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${MAPDOWNLOADER_PLUGIN_FILE_NAME}"
 
 # SM-TickrateChanger (release zip)
 # ARG TICKRATE_CHANGER_VERSION=1.1.1
@@ -223,7 +216,7 @@ RUN set -Eeuo pipefail; \
 FROM tf2-summon-sourcemod
 
 ARG PLUGIN_INSTALL_DIR=/server/tf
-COPY --from=plugins --chown=tf2 "${PLUGIN_INSTALL_DIR}/" "${SERVER_DIR}/tf/"
+COPY --from=downloaded-addons --chown=tf2 "${PLUGIN_INSTALL_DIR}/" "${SERVER_DIR}/tf/"
 
 # Copy compiled plugins
 COPY --from=compiler --chown=tf2 /compile/plugins/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
@@ -233,7 +226,10 @@ COPY --from=compiler --chown=tf2 /compile/gamedata/*.txt "${SERVER_DIR}/tf/addon
 
 # Disable useless plugins
 RUN mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled" \
-    && mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{funcommands,funvotes}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
+    && mv \
+      "${SERVER_DIR}/tf/addons/sourcemod/plugins/funcommands.smx" \
+      "${SERVER_DIR}/tf/addons/sourcemod/plugins/funvotes.smx" \
+      "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 
 ENV DOWNLOAD_URL=
 ENV SM_MAP_DOWNLOAD_BASE=https://fastdl.serveme.tf/maps

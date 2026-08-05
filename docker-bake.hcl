@@ -20,13 +20,23 @@ target "sourcemod" {
   }
 }
 
-target "plugins" {
-  context    = "./docker/plugins"
+target "core-addons" {
+  context    = "./docker/core-addons"
   dockerfile = "Dockerfile"
   platforms  = ["linux/amd64"]
 
   contexts = {
     tf2-summon-sourcemod = "target:sourcemod"
+  }
+}
+
+target "competitive-assets" {
+  context    = "./docker/competitive-assets"
+  dockerfile = "Dockerfile"
+  platforms  = ["linux/amd64"]
+
+  contexts = {
+    tf2-summon-core-addons = "target:core-addons"
   }
 }
 
@@ -38,7 +48,7 @@ target "image" {
   tags       = ["tf2-summon:local"]
 
   contexts = {
-    tf2-summon-plugins = "target:plugins"
+    tf2-summon-competitive-assets = "target:competitive-assets"
   }
 }
 
@@ -55,6 +65,6 @@ target "image-amd64" {
   }
 
   contexts = {
-    tf2-summon-plugins = "target:plugins"
+    tf2-summon-competitive-assets = "target:competitive-assets"
   }
 }
