@@ -170,3 +170,10 @@ ENV LOGS_TF_APIKEY=
 
 COPY --chown=tf2 plugins/ ${SERVER_DIR}/tf/addons/sourcemod/plugins/
 COPY cfg/ ${SERVER_DIR}/tf/cfg/
+
+ARG SRCDS_EXEC=srcds_run
+ARG TF2_SERVER_ARCH=i386
+
+ENV SRCDS_EXEC=${SRCDS_EXEC}
+
+LABEL tf2.server.architecture="${TF2_SERVER_ARCH}"

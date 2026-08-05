@@ -2,11 +2,29 @@
 set -Eeuo pipefail
 
 image_name="${1:-tf2-summon:local}"
+server_arch="${2:-i386}"
 container_name="tf2-summon-contract-${RANDOM}-$$"
 container_runtime="${CONTAINER_RUNTIME:-docker}"
 summon_exact="${SUMMON_EXACT:-0}"
 rcon_password="summon-rcon-test"
 wait_status_file=""
+
+case "${server_arch}" in
+  i386)
+    srcds_exec=srcds_run
+    server_binary=/home/tf2/server/srcds_linux
+    elf_class=1
+    ;;
+  amd64)
+    srcds_exec=srcds_run_64
+    server_binary=/home/tf2/server/srcds_linux64
+    elf_class=2
+    ;;
+  *)
+    echo "Server architecture must be i386 or amd64" >&2
+    exit 1
+    ;;
+esac
 
 report_failure() {
   local status="$1"
@@ -54,14 +72,23 @@ test "$("${container_runtime}" image inspect --format '{{.Config.User}}' "${imag
 test "$("${container_runtime}" image inspect --format '{{.Config.WorkingDir}}' "${image_name}")" = "/home/tf2/server"
 test "$("${container_runtime}" image inspect --format '{{json .Config.Entrypoint}}' "${image_name}")" = '["./entrypoint.sh"]'
 test "$("${container_runtime}" image inspect --format '{{json .Config.Cmd}}' "${image_name}")" = '["+sv_pure","1","+map","cp_badlands","+maxplayers","24"]'
+test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "tf2.server.architecture"}}' "${image_name}")" = "${server_arch}"
+"${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
+  | grep -Fxq "SRCDS_EXEC=${srcds_exec}"
 
 # The quoted script expands variables inside the container, not in this shell.
 # shellcheck disable=SC2016
-"${container_runtime}" run --rm --entrypoint bash "${image_name}" -lc '
+"${container_runtime}" run --rm --entrypoint bash \
+  -e EXPECTED_SERVER_BINARY="${server_binary}" \
+  -e EXPECTED_ELF_CLASS="${elf_class}" \
+  "${image_name}" -lc '
   set -Eeuo pipefail
   trap "status=\$?; echo \"Static image contract failed at line \${LINENO}: \${BASH_COMMAND}\" >&2; exit \${status}" ERR
 
   test -x /home/tf2/server/rcon
+  test -x "${EXPECTED_SERVER_BINARY}"
+  test "$(od -An -t u1 -j 4 -N 1 "${EXPECTED_SERVER_BINARY}" | tr -d " ")" = "${EXPECTED_ELF_CLASS}"
+  test -e /home/tf2/.steam/sdk64/steamclient.so
   test -d /home/tf2/server/tf
   test -f /home/tf2/server/tf/maps/cp_badlands.bsp
   test "$(find /home/tf2/server/tf/maps -maxdepth 1 -type f -name "*.bsp" | wc -l)" -eq 1
@@ -135,6 +162,20 @@ done
 grep -Fq "hostname: Summon Contract Test" <<<"${status_output}"
 grep -Eq 'map[[:space:]]*:[[:space:]]*cp_badlands' <<<"${status_output}"
 
+# Confirm that the configured wrapper launched the requested SRCDS ELF rather
+# than merely carrying both server architectures in the image.
+# shellcheck disable=SC2016
+"${container_runtime}" exec "${container_name}" bash -lc '
+  expected_binary="$1"
+  for process_exe in /proc/[0-9]*/exe; do
+    if [ "$(readlink "${process_exe}" 2>/dev/null || true)" = "${expected_binary}" ]; then
+      exit 0
+    fi
+  done
+  echo "Running SRCDS process not found: ${expected_binary}" >&2
+  exit 1
+' bash "${server_binary}"
+
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
@@ -201,4 +242,4 @@ while "${container_runtime}" container inspect "${container_name}" >/dev/null 2>
 done
 
 trap - EXIT
-echo "Image contract passed with ${container_runtime} (SUMMON_EXACT=${summon_exact}): ${image_name}"
+echo "Image contract passed with ${container_runtime} (server_arch=${server_arch}, SUMMON_EXACT=${summon_exact}): ${image_name}"

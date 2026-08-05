@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["image"]
+  targets = ["image", "image-amd64"]
 }
 
 target "docker-metadata-action" {}
@@ -36,6 +36,23 @@ target "image" {
   dockerfile = "Dockerfile"
   platforms  = ["linux/amd64"]
   tags       = ["tf2-summon:local"]
+
+  contexts = {
+    tf2-summon-plugins = "target:plugins"
+  }
+}
+
+target "image-amd64" {
+  inherits   = ["docker-metadata-action"]
+  context    = "."
+  dockerfile = "Dockerfile"
+  platforms  = ["linux/amd64"]
+  tags       = ["tf2-summon:amd64-local"]
+
+  args = {
+    SRCDS_EXEC      = "srcds_run_64"
+    TF2_SERVER_ARCH = "amd64"
+  }
 
   contexts = {
     tf2-summon-plugins = "target:plugins"

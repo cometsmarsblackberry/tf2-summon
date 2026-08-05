@@ -5,14 +5,21 @@ A self-contained Team Fortress 2 reservation server image for
 server, Metamod:Source, SourceMod, competitive configs, reservation plugins,
 and the command-line RCON client expected by the Summon agent.
 
-The public image is available through GitHub Container Registry:
+The public images are available through GitHub Container Registry:
 
 ```bash
 docker pull ghcr.io/cometsmarsblackberry/tf2-summon/i386:nightly
+docker pull ghcr.io/cometsmarsblackberry/tf2-summon/amd64:nightly
 ```
 
-The image runs 32-bit SRCDS on `linux/amd64`. The root image name and the
-`/i386` image name are aliases for the same build.
+Both images use the `linux/amd64` container platform. The `/i386` image runs
+32-bit SRCDS, while `/amd64` runs the native 64-bit TF2 server. The root image
+name remains an alias for `/i386` for compatibility.
+
+Some bundled third-party native SourceMod extensions only provide 32-bit Linux
+binaries. Their dependent optional plugins are unavailable in the `/amd64`
+variant until upstream Linux x86-64 ports exist; Summon, Map Downloader,
+Metamod:Source, SourceMod, and RCON are covered by the 64-bit image contract.
 
 ## Run
 
@@ -71,9 +78,10 @@ Docker Buildx 0.17 or newer is required because the build uses local target
 contexts to keep every layer in this repository:
 
 ```bash
-docker buildx bake image --load
+docker buildx bake image image-amd64 --load
 tests/validate.sh
-tests/contract.sh tf2-summon:local
+tests/contract.sh tf2-summon:local i386
+tests/contract.sh tf2-summon:amd64-local amd64
 ```
 
 Set `SUMMON_EXACT=1` to exercise Summon's fixed host ports and FakeIP launch
