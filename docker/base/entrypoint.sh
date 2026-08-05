@@ -36,9 +36,11 @@ faketty() {
 }
 
 quit() {
+  trap '' SIGTERM
   echo "*** Stopping ***"
-  # The pinned client sends the command but returns nonzero in no-wait mode.
-  "${SERVER_DIR}/rcon" -H "${IP/0.0.0.0/127.0.0.1}" -p "${PORT}" -P "${RCON_PASSWORD}" --nowait quit || true
+  # Authentication can still block in no-wait mode, so do not let the RCON
+  # request consume Summon's ten-second container stop deadline.
+  "${SERVER_DIR}/rcon" -H "${IP/0.0.0.0/127.0.0.1}" -p "${PORT}" -P "${RCON_PASSWORD}" --nowait quit </dev/null >/dev/null 2>&1 &
   sleep 5
   exit 0
 }

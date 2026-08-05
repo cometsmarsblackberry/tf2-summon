@@ -167,6 +167,16 @@ grep -Fqi 'Map Downloader' <<<"${plugin_output}"
   test -d /home/tf2/server/tf/logs
 '
 
+# Reproduce the pinned client's unbounded authentication wait. The entrypoint
+# must keep PID 1's shutdown bounded even when its best-effort RCON helper hangs.
+# The quoted script expands SERVER_DIR inside the container, not in this shell.
+# shellcheck disable=SC2016
+"${container_runtime}" exec "${container_name}" bash -lc '
+  mv "${SERVER_DIR}/rcon" "${SERVER_DIR}/rcon-real"
+  printf "#!/bin/sh\nsleep 60\n" > "${SERVER_DIR}/rcon"
+  chmod 755 "${SERVER_DIR}/rcon"
+'
+
 wait_status_file="$(mktemp)"
 "${container_runtime}" wait "${container_name}" >"${wait_status_file}" &
 wait_pid=$!
@@ -175,6 +185,7 @@ wait "${wait_pid}"
 wait_status="$(cat "${wait_status_file}")"
 if [ "${wait_status}" != "0" ]; then
   echo "Container returned status ${wait_status} after graceful stop" >&2
+  "${container_runtime}" logs "${container_name}" >&2 || true
   exit 1
 fi
 rm -f "${wait_status_file}"
