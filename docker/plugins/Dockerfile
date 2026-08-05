@@ -12,14 +12,6 @@ WORKDIR /download
 ARG PLUGIN_INSTALL_DIR=/server/tf
 RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
 
-# SourceBans++
-ARG SOURCEBANS_VERSION=1.7.0
-ARG SOURCEBANS_FILE_NAME=sourcebans-pp-${SOURCEBANS_VERSION}.plugins-only.tar.gz
-ARG SOURCEBANS_URL=https://github.com/sbpp/sourcebans-pp/releases/download/${SOURCEBANS_VERSION}/${SOURCEBANS_FILE_NAME}
-ARG SOURCEBANS_CHECKSUM=07ac3d745d544a8b93d2ccad148edcaea802960982d9776b4bea0eea5e792bd4
-ADD --checksum=sha256:${SOURCEBANS_CHECKSUM} ${SOURCEBANS_URL} .
-RUN tar xf "${SOURCEBANS_FILE_NAME}" -C "${PLUGIN_INSTALL_DIR}/"
-
 # tf2-comp-fixes
 ARG COMP_FIXES_FILE_NAME=tf2-comp-fixes.zip
 ARG COMP_FIXES_VERSION=1.16.19
@@ -76,29 +68,29 @@ ADD --checksum=sha256:${MAPDOWNLOADER_PLUGIN_CHECKSUM} ${MAPDOWNLOADER_PLUGIN_UR
 RUN cp "${MAPDOWNLOADER_PLUGIN_FILE_NAME}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${MAPDOWNLOADER_PLUGIN_FILE_NAME}"
 
 # SM-TickrateChanger (release zip)
-ARG TICKRATE_CHANGER_VERSION=1.1.1
-ARG TICKRATE_CHANGER_FILE_NAME=SM-TickrateChanger.zip
-ARG TICKRATE_CHANGER_URL=https://github.com/Mikusch/SM-TickrateChanger/releases/download/${TICKRATE_CHANGER_VERSION}/${TICKRATE_CHANGER_FILE_NAME}
-ARG TICKRATE_CHANGER_CHECKSUM=8430b45fd961f18c53131c44f879f8effb691a8213775f5b3ae1a85b2e0dfe34
-ADD --checksum=sha256:${TICKRATE_CHANGER_CHECKSUM} ${TICKRATE_CHANGER_URL} .
-RUN unzip -q -o "${TICKRATE_CHANGER_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
+# ARG TICKRATE_CHANGER_VERSION=1.1.1
+# ARG TICKRATE_CHANGER_FILE_NAME=SM-TickrateChanger.zip
+# ARG TICKRATE_CHANGER_URL=https://github.com/Mikusch/SM-TickrateChanger/releases/download/${TICKRATE_CHANGER_VERSION}/${TICKRATE_CHANGER_FILE_NAME}
+# ARG TICKRATE_CHANGER_CHECKSUM=8430b45fd961f18c53131c44f879f8effb691a8213775f5b3ae1a85b2e0dfe34
+# ADD --checksum=sha256:${TICKRATE_CHANGER_CHECKSUM} ${TICKRATE_CHANGER_URL} .
+# RUN unzip -q -o "${TICKRATE_CHANGER_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
 # TF2-Imageboard-GreenText (release smx)
-ARG GREENTEXT_VERSION=1.0.0
-ARG GREENTEXT_FILE_NAME=tf2_4chan_quoter.smx
-ARG GREENTEXT_URL=https://github.com/KohtepSP/TF2-Imageboard-GreenText/releases/download/${GREENTEXT_VERSION}/${GREENTEXT_FILE_NAME}
-ARG GREENTEXT_CHECKSUM=e24d4a5db1034e18c16aeefe4ca49810c4831ab74c754cdce3b3ace0f7804e13
-ADD --checksum=sha256:${GREENTEXT_CHECKSUM} ${GREENTEXT_URL} "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${GREENTEXT_FILE_NAME}"
+# ARG GREENTEXT_VERSION=1.0.0
+# ARG GREENTEXT_FILE_NAME=tf2_4chan_quoter.smx
+# ARG GREENTEXT_URL=https://github.com/KohtepSP/TF2-Imageboard-GreenText/releases/download/${GREENTEXT_VERSION}/${GREENTEXT_FILE_NAME}
+# ARG GREENTEXT_CHECKSUM=e24d4a5db1034e18c16aeefe4ca49810c4831ab74c754cdce3b3ace0f7804e13
+# ADD --checksum=sha256:${GREENTEXT_CHECKSUM} ${GREENTEXT_URL} "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${GREENTEXT_FILE_NAME}"
 
 # funcommandsX (precompiled with translations and config)
-ARG FUNCOMMANDSX_COMMIT=5467d433cbcfb666581ea08edc2a267d3578d5b7
-ARG FUNCOMMANDSX_BASE_URL=https://raw.githubusercontent.com/Dosergen/Stuff/${FUNCOMMANDSX_COMMIT}/funcommandsX
-ARG FUNCOMMANDSX_PLUGIN_CHECKSUM=fa788add4542a29ff7ba1f3c48a76eab793812775c50b8f8f2e2bbf7bb37ad8d
-ARG FUNCOMMANDSX_TRANSLATIONS_CHECKSUM=2f33a8b89cfcaae84ed87e7441de57654be645d4981e25f5f3624006117c140d
-ARG FUNCOMMANDSX_CONFIG_CHECKSUM=39e2dfc31c3b124cc3d534157c723d84c950ab4d02b31eaa2303ddeec2f39aa7
-ADD --checksum=sha256:${FUNCOMMANDSX_PLUGIN_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/plugins/funcommandsX.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/funcommandsX.smx"
-ADD --checksum=sha256:${FUNCOMMANDSX_TRANSLATIONS_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/translations/funcommandsX.phrases.txt "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations/funcommandsX.phrases.txt"
-ADD --checksum=sha256:${FUNCOMMANDSX_CONFIG_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/configs/happy_phrases.ini "${PLUGIN_INSTALL_DIR}/addons/sourcemod/configs/happy_phrases.ini"
+# ARG FUNCOMMANDSX_COMMIT=5467d433cbcfb666581ea08edc2a267d3578d5b7
+# ARG FUNCOMMANDSX_BASE_URL=https://raw.githubusercontent.com/Dosergen/Stuff/${FUNCOMMANDSX_COMMIT}/funcommandsX
+# ARG FUNCOMMANDSX_PLUGIN_CHECKSUM=fa788add4542a29ff7ba1f3c48a76eab793812775c50b8f8f2e2bbf7bb37ad8d
+# ARG FUNCOMMANDSX_TRANSLATIONS_CHECKSUM=2f33a8b89cfcaae84ed87e7441de57654be645d4981e25f5f3624006117c140d
+# ARG FUNCOMMANDSX_CONFIG_CHECKSUM=39e2dfc31c3b124cc3d534157c723d84c950ab4d02b31eaa2303ddeec2f39aa7
+# ADD --checksum=sha256:${FUNCOMMANDSX_PLUGIN_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/plugins/funcommandsX.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/funcommandsX.smx"
+# ADD --checksum=sha256:${FUNCOMMANDSX_TRANSLATIONS_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/translations/funcommandsX.phrases.txt "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations/funcommandsX.phrases.txt"
+# ADD --checksum=sha256:${FUNCOMMANDSX_CONFIG_CHECKSUM} ${FUNCOMMANDSX_BASE_URL}/configs/happy_phrases.ini "${PLUGIN_INSTALL_DIR}/addons/sourcemod/configs/happy_phrases.ini"
 
 # Reloadmap (precompiled)
 ARG RELOADMAP_COMMIT=5256b9ea833d5362afbd2effeb0e3ac370178412
@@ -171,9 +163,9 @@ ADD --checksum=sha256:${COMMAND_BUFFER_PLUGIN_CHECKSUM} https://raw.githubuserco
 ADD --checksum=sha256:${COMMAND_BUFFER_GAMEDATA_CHECKSUM} https://raw.githubusercontent.com/SilvDev/Command_Buffer/${COMMAND_BUFFER_COMMIT}/gamedata/command_buffer.games.txt /compile/gamedata/command_buffer.games.txt
 
 # HideViewmodel (regular version with clientprefs)
-ARG HIDEVIEWMODEL_COMMIT=87cd1eb4dd6b6654db46c532bfd0dd33b3a7062e
-ARG HIDEVIEWMODEL_CHECKSUM=2ecd287823fd0c3108e4ed8233ab9770d57a7ab1d0896682402e207ca29b83c0
-ADD --checksum=sha256:${HIDEVIEWMODEL_CHECKSUM} https://raw.githubusercontent.com/notkoen/HideViewmodel/${HIDEVIEWMODEL_COMMIT}/HideViewmodel.sp /compile/scripting/HideViewmodel.sp
+# ARG HIDEVIEWMODEL_COMMIT=87cd1eb4dd6b6654db46c532bfd0dd33b3a7062e
+# ARG HIDEVIEWMODEL_CHECKSUM=2ecd287823fd0c3108e4ed8233ab9770d57a7ab1d0896682402e207ca29b83c0
+# ADD --checksum=sha256:${HIDEVIEWMODEL_CHECKSUM} https://raw.githubusercontent.com/notkoen/HideViewmodel/${HIDEVIEWMODEL_COMMIT}/HideViewmodel.sp /compile/scripting/HideViewmodel.sp
 
 # linux_file_lowercaser (source + gamedata)
 ARG LINUX_LOWERCASER_COMMIT=b3abce9547997eab0534f46a2c6f9654709cb041
@@ -183,11 +175,11 @@ ADD --checksum=sha256:${LINUX_LOWERCASER_PLUGIN_CHECKSUM} https://raw.githubuser
 ADD --checksum=sha256:${LINUX_LOWERCASER_GAMEDATA_CHECKSUM} https://raw.githubusercontent.com/rtldg/linux_file_lowercaser/${LINUX_LOWERCASER_COMMIT}/addons/sourcemod/gamedata/linux_file_lowercaser.txt /compile/gamedata/linux_file_lowercaser.txt
 
 # noautokick and nospecmsg (from sapphonie/gameservers)
-ARG SAPPHONIE_COMMIT=3407bb856fc3a34e7e28e7afebb82c7683378e7c
-ARG NOAUTOKICK_CHECKSUM=59d0affdc1c745153159dc7862ab0256f0bb625098d10b04ee06cc6ac48c84f1
-ARG NOSPECMSG_CHECKSUM=a98dae556372692fb03c544ed996fb99be0c44a206af90ad72ac43d46d87c3b9
-ADD --checksum=sha256:${NOAUTOKICK_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/noautokick.sp /compile/scripting/noautokick.sp
-ADD --checksum=sha256:${NOSPECMSG_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/nospecmsg.sp /compile/scripting/nospecmsg.sp
+# ARG SAPPHONIE_COMMIT=3407bb856fc3a34e7e28e7afebb82c7683378e7c
+# ARG NOAUTOKICK_CHECKSUM=59d0affdc1c745153159dc7862ab0256f0bb625098d10b04ee06cc6ac48c84f1
+# ARG NOSPECMSG_CHECKSUM=a98dae556372692fb03c544ed996fb99be0c44a206af90ad72ac43d46d87c3b9
+# ADD --checksum=sha256:${NOAUTOKICK_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/noautokick.sp /compile/scripting/noautokick.sp
+# ADD --checksum=sha256:${NOSPECMSG_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/nospecmsg.sp /compile/scripting/nospecmsg.sp
 
 # PlayerAnalytics (source + gamedata)
 # ARG PLAYERANALYTICS_COMMIT=master
@@ -196,8 +188,8 @@ ADD --checksum=sha256:${NOSPECMSG_CHECKSUM} https://raw.githubusercontent.com/sa
 
 # restartsoon (from sapphonie/gameservers)
 # syskill DISABLED - requires System2 which has upstream syntax incompatibility
-ARG RESTARTSOON_CHECKSUM=e3c35c9003f1f134a1c3e05673662eca7d8f65deffe6829f2eae34043c3da4b5
-ADD --checksum=sha256:${RESTARTSOON_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/restartsoon.sp /compile/scripting/restartsoon.sp
+# ARG RESTARTSOON_CHECKSUM=e3c35c9003f1f134a1c3e05673662eca7d8f65deffe6829f2eae34043c3da4b5
+# ADD --checksum=sha256:${RESTARTSOON_CHECKSUM} https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/restartsoon.sp /compile/scripting/restartsoon.sp
 # ADD https://raw.githubusercontent.com/sapphonie/gameservers/${SAPPHONIE_COMMIT}/tf/addons/sourcemod/scripting/syskill.sp /compile/scripting/syskill.sp
 
 # Spray_Exploit
