@@ -64,6 +64,8 @@ RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
   && mkdir -p $HOME/.steam \
   && ln -s $HOME/.local/share/Steam/steamcmd/linux32 $HOME/.steam/sdk32
 
+RUN ln -s $HOME/.local/share/Steam/steamcmd/linux64 $HOME/.steam/sdk64
+
 COPY server.cfg.template ${SERVER_DIR}/tf/cfg/server.cfg.template
 COPY --from=rcon-build /build/rcon/build/rcon ${SERVER_DIR}/rcon
 

@@ -36,8 +36,8 @@ jobs:
       - name: Validate repository
         run: tests/validate.sh
 
-      - name: Generate image metadata
-        id: meta
+      - name: Generate 32-bit image metadata
+        id: meta_i386
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: |
@@ -50,22 +50,51 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
-      - name: Build image
+      - name: Generate 64-bit image metadata
+        id: meta_amd64
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository }}/amd64
+          tags: |
+            type=sha,format=long
+            type=raw,value=nightly,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build 32-bit image
         uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7
         with:
           source: .
           files: |
             ./docker-bake.hcl
-            cwd://${{ steps.meta.outputs.bake-file-labels }}
+            cwd://${{ steps.meta_i386.outputs.bake-file-labels }}
           targets: image
           load: true
           set: |
             image.tags=tf2-summon:test
 
-      - name: Test image contract
+      - name: Test 32-bit image contract
         env:
           SUMMON_EXACT: "1"
-        run: tests/contract.sh tf2-summon:test
+        run: tests/contract.sh tf2-summon:test i386
+
+      - name: Build 64-bit image
+        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7
+        with:
+          source: .
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta_amd64.outputs.bake-file-labels }}
+          targets: image-amd64
+          load: true
+          set: |
+            image-amd64.tags=tf2-summon:amd64-test
+
+      - name: Test 64-bit image contract
+        env:
+          SUMMON_EXACT: "1"
+        run: tests/contract.sh tf2-summon:amd64-test amd64
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -78,10 +107,18 @@ jobs:
       - name: Publish image tags
         if: github.event_name != 'pull_request'
         env:
-          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+          I386_IMAGE_TAGS: ${{ steps.meta_i386.outputs.tags }}
+          AMD64_IMAGE_TAGS: ${{ steps.meta_amd64.outputs.tags }}
         run: |
-          while IFS= read -r tag; do
-            test -n "${tag}" || continue
-            docker tag tf2-summon:test "${tag}"
-            docker push "${tag}"
-          done <<<"${IMAGE_TAGS}"
+          publish_tags() {
+            local source_image="$1"
+            local image_tags="$2"
+            while IFS= read -r tag; do
+              test -n "${tag}" || continue
+              docker tag "${source_image}" "${tag}"
+              docker push "${tag}"
+            done <<<"${image_tags}"
+          }
+
+          publish_tags tf2-summon:test "${I386_IMAGE_TAGS}"
+          publish_tags tf2-summon:amd64-test "${AMD64_IMAGE_TAGS}"

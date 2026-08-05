@@ -42,6 +42,10 @@ grep -Fqx 'FROM tf2-summon-plugins' Dockerfile
 grep -Fq 'tf2-summon-base = "target:base"' docker-bake.hcl
 grep -Fq 'tf2-summon-sourcemod = "target:sourcemod"' docker-bake.hcl
 grep -Fq 'tf2-summon-plugins = "target:plugins"' docker-bake.hcl
+grep -Fq 'target "image-amd64"' docker-bake.hcl
+grep -Fq 'SRCDS_EXEC      = "srcds_run_64"' docker-bake.hcl
+grep -Fq 'TF2_SERVER_ARCH = "amd64"' docker-bake.hcl
+grep -Fq 'steamcmd/linux64' docker/base/Dockerfile
 
 if command -v rg >/dev/null 2>&1; then
   search_repository() {
