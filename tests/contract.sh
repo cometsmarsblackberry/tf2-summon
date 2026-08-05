@@ -172,7 +172,11 @@ wait_status_file="$(mktemp)"
 wait_pid=$!
 "${container_runtime}" stop -t 10 "${container_name}" >/dev/null
 wait "${wait_pid}"
-test "$(cat "${wait_status_file}")" = "0"
+wait_status="$(cat "${wait_status_file}")"
+if [ "${wait_status}" != "0" ]; then
+  echo "Container returned status ${wait_status} after graceful stop" >&2
+  exit 1
+fi
 rm -f "${wait_status_file}"
 wait_status_file=""
 
