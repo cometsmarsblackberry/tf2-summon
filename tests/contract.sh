@@ -129,7 +129,7 @@ fi
 
   printf "%s  %s\n" \
     bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx \
-    b0d4235a9ea241ca392765b08ea6e74fcf9097010bab4ac1c77fd6821dd39afe /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx \
+    e1ee2763ccfd4ebfadbeb7a6b9dac298100a3b19de9f2e56401a357630306244 /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx \
     | sha256sum -c -
 
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
