@@ -22,6 +22,7 @@ required_files=(
   plugins/autoreload.smx
   plugins/mapdownloader.smx
   plugins/summon.smx
+  sourcemod/configs/summon_owner_commands.cfg
 )
 
 for file in "${required_files[@]}"; do
@@ -34,7 +35,7 @@ done
 printf '%s  %s\n' \
   0e34864d17cdaa615b6cde3a45fec858aaa4d816c1072666045f7f5b774a83ed plugins/autoreload.smx \
   bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 plugins/mapdownloader.smx \
-  afb269af47a8dde925b85ac039159ab8540237dfec44cba6a851f7c944ba1877 plugins/summon.smx \
+  b0d4235a9ea241ca392765b08ea6e74fcf9097010bab4ac1c77fd6821dd39afe plugins/summon.smx \
   | sha256sum -c -
 
 grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
