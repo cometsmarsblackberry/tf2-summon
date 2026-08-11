@@ -14,6 +14,7 @@ ENV LOGS_TF_APIKEY=
 
 # These checked-in plugins and configs are the Summon-specific final overlay.
 COPY --chown=tf2 plugins/ ${SERVER_DIR}/tf/addons/sourcemod/plugins/
+COPY --chown=tf2 sourcemod/configs/ ${SERVER_DIR}/tf/addons/sourcemod/configs/
 COPY cfg/ ${SERVER_DIR}/tf/cfg/
 
 ARG SRCDS_EXEC=srcds_run

@@ -96,6 +96,7 @@ test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "t
   test -d /home/tf2/server/tf/addons/sourcemod
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx
+  test -f /home/tf2/server/tf/addons/sourcemod/configs/summon_owner_commands.cfg
   test -f /home/tf2/server/tf/addons/sourcemod/extensions/rip.ext.so
   test -f /home/tf2/server/tf/cfg/summon_reset.cfg
   test -f /home/tf2/server/tf/cfg/rgl_6s_5cp_match.cfg
@@ -109,7 +110,7 @@ test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "t
 
   printf "%s  %s\n" \
     bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx \
-    afb269af47a8dde925b85ac039159ab8540237dfec44cba6a851f7c944ba1877 /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx \
+    b0d4235a9ea241ca392765b08ea6e74fcf9097010bab4ac1c77fd6821dd39afe /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx \
     | sha256sum -c -
 
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
@@ -179,6 +180,9 @@ grep -Eq 'map[[:space:]]*:[[:space:]]*cp_badlands' <<<"${status_output}"
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
+
+owner_commands_output="$("${rcon[@]}" 'sm_summon_reload_owner_commands')"
+grep -Eq 'Loaded [1-9][0-9]* reservation-owner commands\.' <<<"${owner_commands_output}"
 
 "${rcon[@]}" 'sm_reserve_owner "76561198000000000"' >/dev/null
 "${rcon[@]}" 'sm_reserve_owner_name "Contract Owner"' >/dev/null
