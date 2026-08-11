@@ -43,6 +43,7 @@ ARG USER=tf2
 ARG HOME=/home/$USER
 ARG SERVER_DIR=$HOME/server
 ARG APP_ID=232250
+ARG TF2_SERVER_VERSION=unknown
 ENV SRCDS_EXEC=srcds_run
 
 ENV USER=$USER
@@ -56,7 +57,8 @@ WORKDIR $HOME
 
 COPY maps_to_keep tf2.txt.template $HOME/
 COPY --chmod=775 install_tf2.sh $HOME/
-RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
+RUN test -n "${TF2_SERVER_VERSION}" \
+  && envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
   && steamcmd +help +quit \
   && $HOME/install_tf2.sh \
   && find $SERVER_DIR/tf/maps -type f | grep -v "$(cat maps_to_keep)" | xargs rm -rf \

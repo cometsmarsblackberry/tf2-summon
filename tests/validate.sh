@@ -47,9 +47,14 @@ grep -Fq 'tf2-summon-sourcemod = "target:sourcemod"' docker-bake.hcl
 grep -Fq 'tf2-summon-core-addons = "target:core-addons"' docker-bake.hcl
 grep -Fq 'tf2-summon-competitive-assets = "target:competitive-assets"' docker-bake.hcl
 grep -Fq 'target "image-amd64"' docker-bake.hcl
-grep -Fq 'SRCDS_EXEC      = "srcds_run_64"' docker-bake.hcl
-grep -Fq 'TF2_SERVER_ARCH = "amd64"' docker-bake.hcl
+grep -Fq 'SRCDS_EXEC         = "srcds_run_64"' docker-bake.hcl
+grep -Fq 'TF2_SERVER_ARCH    = "amd64"' docker-bake.hcl
+grep -Fq 'TF2_SERVER_VERSION = TF2_SERVER_VERSION' docker-bake.hcl
 grep -Fq 'steamcmd/linux64' docker/base/Dockerfile
+grep -Fq 'ARG TF2_SERVER_VERSION=unknown' docker/base/Dockerfile
+# The Docker build argument is intentionally literal.
+# shellcheck disable=SC2016
+grep -Fq 'tf2.server.version="${TF2_SERVER_VERSION}"' Dockerfile
 
 if command -v rg >/dev/null 2>&1; then
   search_repository() {

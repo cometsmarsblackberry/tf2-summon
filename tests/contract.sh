@@ -73,6 +73,17 @@ test "$("${container_runtime}" image inspect --format '{{.Config.WorkingDir}}' "
 test "$("${container_runtime}" image inspect --format '{{json .Config.Entrypoint}}' "${image_name}")" = '["./entrypoint.sh"]'
 test "$("${container_runtime}" image inspect --format '{{json .Config.Cmd}}' "${image_name}")" = '["+sv_pure","1","+map","cp_badlands","+maxplayers","24"]'
 test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "tf2.server.architecture"}}' "${image_name}")" = "${server_arch}"
+image_tf2_server_version="$(
+  "${container_runtime}" image inspect \
+    --format '{{index .Config.Labels "tf2.server.version"}}' "${image_name}"
+)"
+if [[ ! "${image_tf2_server_version}" =~ ^(unknown|[1-9][0-9]*)$ ]]; then
+  echo "Invalid tf2.server.version image label: ${image_tf2_server_version}" >&2
+  exit 1
+fi
+if [ -n "${TF2_SERVER_VERSION:-}" ]; then
+  test "${image_tf2_server_version}" = "${TF2_SERVER_VERSION}"
+fi
 "${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
   | grep -Fxq "SRCDS_EXEC=${srcds_exec}"
 
@@ -81,6 +92,7 @@ test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "t
 "${container_runtime}" run --rm --entrypoint bash \
   -e EXPECTED_SERVER_BINARY="${server_binary}" \
   -e EXPECTED_ELF_CLASS="${elf_class}" \
+  -e EXPECTED_TF2_SERVER_VERSION="${image_tf2_server_version}" \
   "${image_name}" -lc '
   set -Eeuo pipefail
   trap "status=\$?; echo \"Static image contract failed at line \${LINENO}: \${BASH_COMMAND}\" >&2; exit \${status}" ERR
@@ -90,6 +102,13 @@ test "$("${container_runtime}" image inspect --format '{{index .Config.Labels "t
   test "$(od -An -t u1 -j 4 -N 1 "${EXPECTED_SERVER_BINARY}" | tr -d " ")" = "${EXPECTED_ELF_CLASS}"
   test -e /home/tf2/.steam/sdk64/steamclient.so
   test -d /home/tf2/server/tf
+  installed_tf2_server_version="$(
+    sed -n "s/^ServerVersion=//p" /home/tf2/server/tf/steam.inf | tr -d "\r"
+  )"
+  test -n "${installed_tf2_server_version}"
+  if [ "${EXPECTED_TF2_SERVER_VERSION}" != unknown ]; then
+    test "${installed_tf2_server_version}" = "${EXPECTED_TF2_SERVER_VERSION}"
+  fi
   test -f /home/tf2/server/tf/maps/cp_badlands.bsp
   test "$(find /home/tf2/server/tf/maps -maxdepth 1 -type f -name "*.bsp" | wc -l)" -eq 1
   test -f /home/tf2/server/tf/addons/metamod.vdf

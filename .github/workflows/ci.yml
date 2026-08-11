@@ -3,7 +3,10 @@ name: Build, test, and publish
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
+    # Check the lightweight TF2 compatibility version hourly.
+    - cron: "23 * * * *"
+    # Rebuild daily to catch content-only Steam depot changes.
+    - cron: "41 3 * * *"
   push:
     branches:
       - main
@@ -15,16 +18,145 @@ on:
 
 concurrency:
   group: image-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
   packages: write
 
 jobs:
+  update:
+    name: Check for a TF2 update
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    outputs:
+      build: ${{ steps.update.outputs.build }}
+      tf2_version: ${{ steps.update.outputs.tf2_version }}
+
+    steps:
+      - name: Set up Docker Buildx
+        if: github.event_name == 'schedule'
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'schedule'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare TF2 server versions
+        id: update
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          ROOT_IMAGE: ghcr.io/${{ github.repository }}:nightly
+          I386_IMAGE: ghcr.io/${{ github.repository }}/i386:nightly
+          AMD64_IMAGE: ghcr.io/${{ github.repository }}/amd64:nightly
+        run: |
+          set -Eeuo pipefail
+
+          api_response=""
+          tf2_version=""
+          if api_response="$(
+            curl --fail-with-body --silent --show-error \
+              --connect-timeout 10 --max-time 30 \
+              --retry 3 --retry-all-errors --retry-delay 2 \
+              --retry-max-time 120 \
+              --get 'https://api.steampowered.com/ISteamApps/UpToDateCheck/v1/' \
+              --data-urlencode appid=440 \
+              --data-urlencode version=0
+          )"; then
+            tf2_version="$(
+              jq -er '
+                .response
+                | select(.success == true and .up_to_date == false)
+                | .required_version
+                | select(
+                    type == "number"
+                    and . == floor
+                    and . >= 1
+                    and . <= 4294967295
+                  )
+                | tostring
+              ' <<<"${api_response}" 2>/dev/null || true
+            )"
+          fi
+
+          if [[ ! "${tf2_version}" =~ ^[1-9][0-9]*$ ]]; then
+            if [ "${EVENT_NAME}" != pull_request ]; then
+              echo "Unable to determine the current TF2 server version" >&2
+              exit 1
+            fi
+
+            echo "::warning::Unable to determine the current TF2 server version; labeling this development build as unknown"
+            tf2_version=unknown
+          fi
+
+          build=true
+          root_version=not-checked
+          i386_version=not-checked
+          amd64_version=not-checked
+
+          if [ "${EVENT_NAME}" = schedule ]; then
+            image_version() {
+              docker buildx imagetools inspect "$1" \
+                --format '{{json .Image.Config.Labels}}' 2>/dev/null \
+                | jq -r '."tf2.server.version" // empty'
+            }
+
+            normalize_version() {
+              if [[ "${1:-}" =~ ^[1-9][0-9]*$ ]]; then
+                printf '%s\n' "$1"
+              elif [ -n "${1:-}" ]; then
+                printf '%s\n' invalid
+              else
+                printf '%s\n' missing
+              fi
+            }
+
+            root_version="$(normalize_version "$(image_version "${ROOT_IMAGE}" || true)")"
+            i386_version="$(normalize_version "$(image_version "${I386_IMAGE}" || true)")"
+            amd64_version="$(normalize_version "$(image_version "${AMD64_IMAGE}" || true)")"
+
+            if [ "${EVENT_SCHEDULE}" != '41 3 * * *' ] \
+              && [ "${root_version}" = "${tf2_version}" ] \
+              && [ "${i386_version}" = "${tf2_version}" ] \
+              && [ "${amd64_version}" = "${tf2_version}" ]; then
+              build=false
+            fi
+          fi
+
+          {
+            echo "### TF2 server update check"
+            echo
+            echo "| Source | Version |"
+            echo "| --- | --- |"
+            echo "| Valve | \`${tf2_version}\` |"
+            echo "| Published root image | \`${root_version}\` |"
+            echo "| Published i386 image | \`${i386_version}\` |"
+            echo "| Published amd64 image | \`${amd64_version}\` |"
+            echo
+            if [ "${EVENT_SCHEDULE}" = '41 3 * * *' ]; then
+              echo "Daily unconditional refresh: **true**"
+              echo
+            fi
+            echo "Build required: **${build}**"
+          } >>"${GITHUB_STEP_SUMMARY}"
+
+          echo "build=${build}" >>"${GITHUB_OUTPUT}"
+          echo "tf2_version=${tf2_version}" >>"${GITHUB_OUTPUT}"
+
   image:
+    needs: update
+    if: needs.update.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
+
+    env:
+      TF2_SERVER_VERSION: ${{ needs.update.outputs.tf2_version }}
 
     steps:
       - name: Check out repository
@@ -44,7 +176,7 @@ jobs:
             ghcr.io/${{ github.repository }}
             ghcr.io/${{ github.repository }}/i386
           tags: |
-            type=sha,format=long
+            type=sha,format=long,enable=${{ github.event_name != 'schedule' }}
             type=raw,value=nightly,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -56,7 +188,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/amd64
           tags: |
-            type=sha,format=long
+            type=sha,format=long,enable=${{ github.event_name != 'schedule' }}
             type=raw,value=nightly,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
