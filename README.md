@@ -96,8 +96,18 @@ path. Set `CONTAINER_RUNTIME=podman` to run the same contract with rootless
 Podman after loading the image into Podman's image store.
 
 The first build downloads the current TF2 dedicated server and can take a
-while. GitHub Actions validates the project, performs the same image contract
-test, and publishes `nightly`, commit SHA, and semantic-version tags.
+while. GitHub Actions checks Valve's current TF2 server version hourly. When
+either published architecture is stale, it rebuilds and contract-tests both
+images before replacing the `nightly` tags. A daily unconditional rebuild also
+captures Steam depot updates that do not change the server compatibility
+version. Pushes, tags, pull requests, and manual runs still build
+unconditionally. Published images record the installed version in the
+`tf2.server.version` OCI label. Non-scheduled publishes retain the existing
+commit-SHA and semantic-version tag rules.
+
+The workflow publishes updated images but does not restart existing containers.
+Consumers must pull `nightly` and recreate their disposable server containers
+to use the new TF2 build.
 
 ## License
 

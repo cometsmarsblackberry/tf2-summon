@@ -19,7 +19,9 @@ COPY cfg/ ${SERVER_DIR}/tf/cfg/
 
 ARG SRCDS_EXEC=srcds_run
 ARG TF2_SERVER_ARCH=i386
+ARG TF2_SERVER_VERSION=unknown
 
 ENV SRCDS_EXEC=${SRCDS_EXEC}
 
-LABEL tf2.server.architecture="${TF2_SERVER_ARCH}"
+LABEL tf2.server.architecture="${TF2_SERVER_ARCH}" \
+      tf2.server.version="${TF2_SERVER_VERSION}"
