@@ -35,7 +35,7 @@ done
 printf '%s  %s\n' \
   0e34864d17cdaa615b6cde3a45fec858aaa4d816c1072666045f7f5b774a83ed plugins/autoreload.smx \
   bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 plugins/mapdownloader.smx \
-  e1ee2763ccfd4ebfadbeb7a6b9dac298100a3b19de9f2e56401a357630306244 plugins/summon.smx \
+  f214aff9ebfb5f34b7a9c27e95e1b6ffdd3fd8f779cfddc09ccfea6a7a0858c5 plugins/summon.smx \
   | sha256sum -c -
 
 grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
