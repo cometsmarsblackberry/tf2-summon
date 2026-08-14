@@ -21,7 +21,9 @@ fail() {
 
 # Replace the outer watchdog in unit tests while preserving the command it
 # wraps. Production continues to use GNU timeout.
-# shellcheck disable=SC2329
+# Older ShellCheck releases report indirect mock calls as SC2317; newer ones
+# report the function declaration as SC2329.
+# shellcheck disable=SC2317,SC2329
 timeout() {
   while [[ "${1:-}" == --* ]]; do
     shift
@@ -59,14 +61,14 @@ write_valid_bsp() {
 
 # Replace the process-group wrapper in unit tests. The dedicated signal test
 # below exercises the real setsid/timeout process topology.
-# shellcheck disable=SC2329
+# shellcheck disable=SC2317,SC2329
 setsid() {
   "$@"
 }
 
 # Mock wget in-process. It runs in the background in production and tests, so
 # call metadata is recorded in files rather than shell variables.
-# shellcheck disable=SC2329
+# shellcheck disable=SC2317,SC2329
 wget() {
   local argument
   local output_file=""
@@ -247,7 +249,7 @@ assert_start_map cp_process_f12
 new_case maximum_size_validation
 write_valid_bsp "${SERVER_DIR}/tf/maps/cp_process_f12.bsp"
 original_max_bytes="$START_MAP_MAX_BYTES"
-START_MAP_MAX_BYTES=$((START_MAP_MIN_BYTES - 1))
+START_MAP_MAX_BYTES=1024
 if is_valid_bsp "${SERVER_DIR}/tf/maps/cp_process_f12.bsp"; then
   fail "BSP larger than the configured maximum was accepted"
 fi
