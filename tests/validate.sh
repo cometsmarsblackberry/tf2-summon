@@ -23,6 +23,7 @@ required_files=(
   plugins/mapdownloader.smx
   plugins/summon.smx
   sourcemod/configs/summon_owner_commands.cfg
+  tests/entrypoint.sh
 )
 
 for file in "${required_files[@]}"; do
@@ -74,12 +75,16 @@ for name in "tf2-"{"server","servers"} "source-""server-""plugins"; do
 done
 
 bash -n docker/base/entrypoint.sh docker/base/healthcheck.sh \
-  docker/base/install_tf2.sh tests/validate.sh tests/contract.sh
+  docker/base/install_tf2.sh tests/validate.sh tests/contract.sh \
+  tests/entrypoint.sh
 
 if command -v shellcheck >/dev/null 2>&1; then
   shellcheck docker/base/entrypoint.sh docker/base/healthcheck.sh \
-    docker/base/install_tf2.sh tests/validate.sh tests/contract.sh
+    docker/base/install_tf2.sh tests/validate.sh tests/contract.sh \
+    tests/entrypoint.sh
 fi
+
+tests/entrypoint.sh
 
 docker buildx bake --print >/dev/null
 

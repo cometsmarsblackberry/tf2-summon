@@ -86,6 +86,8 @@ if [ -n "${TF2_SERVER_VERSION:-}" ]; then
 fi
 "${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
   | grep -Fxq "SRCDS_EXEC=${srcds_exec}"
+"${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
+  | grep -Fxq "SUMMON_START_MAP="
 
 # The quoted script expands variables inside the container, not in this shell.
 # shellcheck disable=SC2016
@@ -99,6 +101,11 @@ fi
 
   test -x /home/tf2/server/rcon
   test -x "${EXPECTED_SERVER_BINARY}"
+  command -v awk >/dev/null
+  command -v od >/dev/null
+  command -v setsid >/dev/null
+  command -v timeout >/dev/null
+  command -v wget >/dev/null
   test "$(od -An -t u1 -j 4 -N 1 "${EXPECTED_SERVER_BINARY}" | tr -d " ")" = "${EXPECTED_ELF_CLASS}"
   test -e /home/tf2/.steam/sdk64/steamclient.so
   test -d /home/tf2/server/tf

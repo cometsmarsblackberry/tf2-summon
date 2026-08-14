@@ -53,6 +53,7 @@ disposable containers and copies logs out before shutdown.
 | `STV_PASSWORD` | empty | SourceTV password |
 | `DOWNLOAD_URL` | empty | FastDL base URL |
 | `SM_MAP_DOWNLOAD_BASE` | `https://fastdl.serveme.tf/maps` | Map download base URL |
+| `SUMMON_START_MAP` | empty | Map to fetch and launch before SRCDS starts; unavailable maps fall back to `cp_badlands` |
 | `DEMOS_TF_APIKEY` | empty | demos.tf API key |
 | `LOGS_TF_APIKEY` | empty | logs.tf API key |
 | `MOTD_URL` | empty | URL written to the generated MOTD file |
@@ -67,6 +68,14 @@ disposable containers and copies logs out before shutdown.
 
 Additional SRCDS arguments are passed after the image name. The image defaults
 to `+sv_pure 1 +map cp_badlands +maxplayers 24` when no arguments are supplied.
+
+Summon sets `SUMMON_START_MAP` while retaining `+map cp_badlands` as a
+command-line fallback. Before SRCDS starts, the entrypoint fetches a missing
+uncompressed BSP from `SM_MAP_DOWNLOAD_BASE`. It installs the file atomically
+only after validating its Source BSP header and lump bounds, applies a 512 MiB
+download ceiling, then starts directly on the requested map. Invalid names and
+missing, corrupt, oversized, or slow downloads leave the bundled `cp_badlands`
+startup unchanged.
 
 The runtime contract intentionally keeps the server at `/home/tf2/server`,
 including the RCON client at `/home/tf2/server/rcon` and game files at
