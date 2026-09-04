@@ -39,6 +39,8 @@ printf '%s  %s\n' \
   07cf5bc1b35a1f1ed8adfa833d82a4b581f2be320492d87cc552d102c5f5517b plugins/summon.smx \
   | sha256sum -c -
 
+grep -Fqx '    "changelevel"' sourcemod/configs/summon_owner_commands.cfg
+
 grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
 grep -Fqx 'FROM tf2-summon-sourcemod' docker/core-addons/Dockerfile
 grep -Fqx 'FROM tf2-summon-core-addons' docker/competitive-assets/Dockerfile

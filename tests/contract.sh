@@ -123,6 +123,7 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx
   test -f /home/tf2/server/tf/addons/sourcemod/configs/summon_owner_commands.cfg
+  grep -Fqx "    \"changelevel\"" /home/tf2/server/tf/addons/sourcemod/configs/summon_owner_commands.cfg
   test -f /home/tf2/server/tf/addons/sourcemod/extensions/rip.ext.so
   test -f /home/tf2/server/tf/cfg/summon_reset.cfg
   test -f /home/tf2/server/tf/cfg/rgl_6s_5cp_match.cfg
