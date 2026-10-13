@@ -81,6 +81,12 @@ The runtime contract intentionally keeps the server at `/home/tf2/server`,
 including the RCON client at `/home/tf2/server/rcon` and game files at
 `/home/tf2/server/tf`.
 
+All players can use `!pause` and `!unpause` (or the silent `/pause` and
+`/unpause`) when the current config enables `sv_pausable 1`. `!pause` forwards
+`setpause`, so repeating it keeps the game paused. `!unpause` forwards
+`unpause`, preserving the bundled F2 pause plugin's five-second countdown and
+player state restoration. The `summon_reset` config disables pausing.
+
 ## Build and test
 
 Docker Buildx 0.17 or newer is required because the build uses local target
