@@ -130,7 +130,9 @@ fi
   test -f /home/tf2/server/tf/cfg/etf2l_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/fbtf_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/ozfortress_6v6_5cp.cfg
+  test ! -e /home/tf2/server/tf/cfg/ozfortress_sc.cfg
   test -f /home/tf2/server/tf/cfg/ultitrio_match.cfg
+  test -f /home/tf2/server/tf/addons/sourcemod/plugins/spells_blocker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx

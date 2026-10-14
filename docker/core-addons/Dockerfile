@@ -15,9 +15,9 @@ RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
 
 # tf2-comp-fixes
 ARG COMP_FIXES_FILE_NAME=tf2-comp-fixes.zip
-ARG COMP_FIXES_VERSION=1.16.19
+ARG COMP_FIXES_VERSION=1.18.1
 ARG COMP_FIXES_URL=https://github.com/ldesgoui/tf2-comp-fixes/releases/download/v${COMP_FIXES_VERSION}/${COMP_FIXES_FILE_NAME}
-ARG COMP_FIXES_CHECKSUM=4a54bdafda9d8f462ac5bfcc9d402840f1954dbfacdb5d17a06e20b796e760e1
+ARG COMP_FIXES_CHECKSUM=781cc48e13aa896f4856fa80d78a6aaaffc221c20e7fa627c40ddc9cc71c3614
 ADD --checksum=sha256:${COMP_FIXES_CHECKSUM} ${COMP_FIXES_URL} .
 RUN unzip -q -o "${COMP_FIXES_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
@@ -189,6 +189,11 @@ ADD --checksum=sha256:${LINUX_LOWERCASER_GAMEDATA_CHECKSUM} https://raw.githubus
 ARG SPRAY_EXPLOIT_COMMIT=ade947bc4976c42b8fba751396deca48881546e5
 ARG SPRAY_EXPLOIT_CHECKSUM=887ba0e80320176ade169778daa63a7711f9899714b863084f7460074609106c
 ADD --checksum=sha256:${SPRAY_EXPLOIT_CHECKSUM} https://raw.githubusercontent.com/SilvDev/Spray_Exploit/${SPRAY_EXPLOIT_COMMIT}/scripting/spray_exploit_fixer.sp /compile/scripting/spray_exploit_fixer.sp
+
+# Spell Banlist (from serveme; inactive until a config sets sm_spellban_spells)
+ARG SPELLS_BLOCKER_COMMIT=dbad665a7d437fd80547c4fd84481ca50d712d07
+ARG SPELLS_BLOCKER_CHECKSUM=9eb2c158296e9e5e23616b67b2cf3e633c698c00b62ba81f5a2cdc5a6effcee2
+ADD --checksum=sha256:${SPELLS_BLOCKER_CHECKSUM} https://raw.githubusercontent.com/Arie/serveme/${SPELLS_BLOCKER_COMMIT}/docker/tf2-cloud-server/spells_blocker.sp /compile/scripting/spells_blocker.sp
 
 # webshortcuts (from castaway-plugins)
 # ARG CASTAWAY_COMMIT=master
