@@ -88,6 +88,23 @@ ADD --checksum=sha256:${ULTITRIO_CONFIGS_CHECKSUM} ${ULTITRIO_CONFIGS_URL} ./${U
 RUN unzip -q "${ULTITRIO_CONFIGS_FILE_NAME}" \
   && cp "Ultitrio-${ULTITRIO_CONFIGS_COMMIT}/ultitrio_"*.{cfg,txt} "${PLUGIN_INSTALL_DIR}/cfg/"
 
+# AsiaFortress, CLTF2, TFArena, and UFL Configs (from serveme.tf, pinned to commit)
+# These leagues do not publish their configs publicly, so they come from serveme.tf's mirror.
+# The AsiaFortress 6s 5CP config layers over rgl_6s_base and uses the Improved Match Timer.
+# The legacy AFC 10 configs (afcad, afckoth, afcpush) are intentionally omitted.
+# The CLTF2 and TFArena configs call the nonexistent "servercfg" command, which would leave
+# servercfgfile unset and skip re-executing the config after a map change.
+ARG SERVEME_CONFIGS_COMMIT=3c5f2bd9dce37d8f416881f93a87fbb7037c3efd
+ARG SERVEME_CONFIGS_FILE_NAME=serveme-${SERVEME_CONFIGS_COMMIT}.zip
+ARG SERVEME_CONFIGS_URL=https://github.com/Arie/serveme/archive/${SERVEME_CONFIGS_COMMIT}.zip
+ARG SERVEME_CONFIGS_CHECKSUM=50f19dde09fa8b60a60283a9d58789c776ddea24dcef1979cb516734f606d27a
+ADD --checksum=sha256:${SERVEME_CONFIGS_CHECKSUM} ${SERVEME_CONFIGS_URL} ./${SERVEME_CONFIGS_FILE_NAME}
+RUN unzip -q "${SERVEME_CONFIGS_FILE_NAME}" "serveme-${SERVEME_CONFIGS_COMMIT}/docker/tf2-cloud-server/base-configs/cfg/*" \
+  && cd "serveme-${SERVEME_CONFIGS_COMMIT}/docker/tf2-cloud-server/base-configs/cfg" \
+  && cp afc_6s_5cp_match_pro.cfg af_HL_{base,koth,koth_bo5,stopwatch}.cfg af_whitelist_HL.txt \
+    cltf2_*.cfg tfarena_*.cfg ufl_base.cfg "${PLUGIN_INSTALL_DIR}/cfg/" \
+  && sed -i 's/^servercfg /servercfgfile /' "${PLUGIN_INSTALL_DIR}/cfg/"{cltf2,tfarena}_*.cfg
+
 # Improved Match Timer
 ARG IMPROVED_MATCH_TIMER_COMMIT=28f1f9a03c07a072684fa3d4977a0898a85b0588
 ARG IMPROVED_MATCH_TIMER_FILE_NAME=Improved-Match-Timer-${IMPROVED_MATCH_TIMER_COMMIT}.zip
