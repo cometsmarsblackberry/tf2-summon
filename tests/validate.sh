@@ -20,8 +20,6 @@ required_files=(
   cfg/server.cfg.template
   cfg/summon_reset.cfg
   plugins/autoreload.smx
-  plugins/mapdownloader.smx
-  plugins/summon.smx
   sourcemod/configs/summon_owner_commands.cfg
   tests/entrypoint.sh
 )
@@ -35,9 +33,14 @@ done
 
 printf '%s  %s\n' \
   0e34864d17cdaa615b6cde3a45fec858aaa4d816c1072666045f7f5b774a83ed plugins/autoreload.smx \
-  bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 plugins/mapdownloader.smx \
-  899ab12fc78cead948cd3b0531bda88311cfbe2a73c5ee11bd8b57be3d0b9ac4 plugins/summon.smx \
   | sha256sum -c -
+
+# Summon's plugins are compiled during the image build from a pinned summon commit.
+test ! -e plugins/summon.smx
+test ! -e plugins/mapdownloader.smx
+grep -Eq '^  default = "https://github\.com/cometsmarsblackberry/summon\.git#[0-9a-f]{40}:tf2-reservation-plugin"$' docker-bake.hcl
+test "$(grep -Fc 'summon-plugin                 = SUMMON_PLUGIN_SOURCE' docker-bake.hcl)" -eq 2
+grep -Fq 'COPY --from=summon-plugin scripting/ scripting/' Dockerfile
 
 grep -Fqx '    "changelevel"' sourcemod/configs/summon_owner_commands.cfg
 

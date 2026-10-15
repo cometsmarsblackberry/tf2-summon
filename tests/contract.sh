@@ -137,11 +137,6 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx
 
-  printf "%s  %s\n" \
-    bc56591d3abc55c7b9f164f8e9ca4d49c7cdd9f363049a65d19eee0ee0d9d380 /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx \
-    899ab12fc78cead948cd3b0531bda88311cfbe2a73c5ee11bd8b57be3d0b9ac4 /home/tf2/server/tf/addons/sourcemod/plugins/summon.smx \
-    | sha256sum -c -
-
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
   ! grep -Fq "not found" /tmp/rcon-ldd
 

@@ -6,6 +6,13 @@ variable "TF2_SERVER_VERSION" {
   default = "unknown"
 }
 
+# Summon's SourceMod plugin sources, pinned to a summon commit. Point this at a
+# local checkout (for example ../summon/tf2-reservation-plugin) to build an image
+# with unpublished plugin changes.
+variable "SUMMON_PLUGIN_SOURCE" {
+  default = "https://github.com/cometsmarsblackberry/summon.git#e228212542abaa75b36f0dc3b69ff7d1f1820a99:tf2-reservation-plugin"
+}
+
 target "docker-metadata-action" {}
 
 target "base" {
@@ -61,6 +68,7 @@ target "image" {
 
   contexts = {
     tf2-summon-competitive-assets = "target:competitive-assets"
+    summon-plugin                 = SUMMON_PLUGIN_SOURCE
   }
 }
 
@@ -79,5 +87,6 @@ target "image-amd64" {
 
   contexts = {
     tf2-summon-competitive-assets = "target:competitive-assets"
+    summon-plugin                 = SUMMON_PLUGIN_SOURCE
   }
 }

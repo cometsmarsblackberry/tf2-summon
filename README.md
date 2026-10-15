@@ -110,6 +110,17 @@ Set `SUMMON_EXACT=1` to exercise Summon's fixed host ports and FakeIP launch
 path. Set `CONTAINER_RUNTIME=podman` to run the same contract with rootless
 Podman after loading the image into Podman's image store.
 
+The Summon and Map Downloader plugins are compiled during the build with the
+image's own SourceMod compiler. Their source comes from the
+`tf2-reservation-plugin` directory of the Summon repository at the commit
+pinned by `SUMMON_PLUGIN_SOURCE` in `docker-bake.hcl`. To release plugin
+changes, push them to Summon and update that commit. To build an image with
+unpublished plugin changes, point the variable at a local checkout:
+
+```bash
+SUMMON_PLUGIN_SOURCE=../summon/tf2-reservation-plugin docker buildx bake image --load
+```
+
 The first build downloads the current TF2 dedicated server and can take a
 while. GitHub Actions checks Valve's current TF2 server version hourly. When
 either published architecture is stale, it rebuilds and contract-tests both
