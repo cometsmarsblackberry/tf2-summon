@@ -45,7 +45,7 @@ disposable containers and copies logs out before shutdown.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `RCON_PASSWORD` | `123456` | RCON authentication |
+| `RCON_PASSWORD` | none (required) | RCON authentication. The container refuses to start without it. |
 | `SERVER_HOSTNAME` | `A Team Fortress 2 server` | Public server name |
 | `SERVER_PASSWORD` | empty | Player password |
 | `STV_NAME` | `Source TV` | SourceTV name |
