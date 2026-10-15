@@ -132,6 +132,13 @@ fi
   test -f /home/tf2/server/tf/cfg/ozfortress_6v6_5cp.cfg
   test ! -e /home/tf2/server/tf/cfg/ozfortress_sc.cfg
   test -f /home/tf2/server/tf/cfg/ultitrio_match.cfg
+  test -f /home/tf2/server/tf/cfg/afc_6s_5cp_match_pro.cfg
+  test -f /home/tf2/server/tf/cfg/af_HL_koth.cfg
+  test -f /home/tf2/server/tf/cfg/af_whitelist_HL.txt
+  test -f /home/tf2/server/tf/cfg/cltf2_4s_koth.cfg
+  test -f /home/tf2/server/tf/cfg/tfarena_6v6_5cp.cfg
+  test -f /home/tf2/server/tf/cfg/ufl_base.cfg
+  test -z "$(grep -l "^servercfg[[:space:]]" /home/tf2/server/tf/cfg/*.cfg || true)"
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/spells_blocker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
