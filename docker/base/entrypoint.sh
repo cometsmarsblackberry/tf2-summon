@@ -217,6 +217,15 @@ prepare_start_map() {
   set_start_map_argument "$selected_map"
 }
 
+require_rcon_password() {
+  # RCON listens on the game port, which manual launches usually publish, so
+  # there is no default password anyone could look up.
+  if [ -z "${RCON_PASSWORD:-}" ]; then
+    echo "*** RCON_PASSWORD is not set; refusing to start without an RCON password ***" >&2
+    return 1
+  fi
+}
+
 generate_admins() {
   local admins_file="${SERVER_DIR}/tf/addons/sourcemod/configs/admins_simple.ini"
   if [ -n "$SM_ADMINS" ]; then
@@ -278,6 +287,7 @@ generate_motd() {
 main() {
   trap 'quit' SIGTERM
 
+  require_rcon_password || exit 1
   generate_motd
   auto_envsubst
   generate_admins

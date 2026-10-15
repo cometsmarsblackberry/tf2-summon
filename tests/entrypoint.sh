@@ -314,4 +314,11 @@ fi
 [ "$(stat -c '%s' "$oversized_file")" -le "$START_MAP_MAX_BYTES" ] \
   || fail "download file exceeded the configured size ceiling"
 
+# The image has no default RCON password, so startup requires one.
+if (RCON_PASSWORD="" require_rcon_password 2>/dev/null); then
+  fail "entrypoint accepted an empty RCON password"
+fi
+(RCON_PASSWORD="contract-secret" require_rcon_password) \
+  || fail "entrypoint rejected an explicit RCON password"
+
 echo "Entrypoint startup-map tests passed"
