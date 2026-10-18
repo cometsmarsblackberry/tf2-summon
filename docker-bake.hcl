@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["image", "image-amd64"]
+  targets = ["image", "image-amd64", "image-sigsegv"]
 }
 
 variable "TF2_SERVER_VERSION" {
@@ -88,5 +88,19 @@ target "image-amd64" {
   contexts = {
     tf2-summon-competitive-assets = "target:competitive-assets"
     summon-plugin                 = SUMMON_PLUGIN_SOURCE
+  }
+}
+
+# The 32-bit image with the sigsegv-mvm Optimize-Only extension added as a final
+# layer, so it differs from the image target only by the extension.
+target "image-sigsegv" {
+  inherits   = ["docker-metadata-action"]
+  context    = "./docker/sigsegv"
+  dockerfile = "Dockerfile"
+  platforms  = ["linux/amd64"]
+  tags       = ["tf2-summon:sigsegv-local"]
+
+  contexts = {
+    tf2-summon-image = "target:image"
   }
 }

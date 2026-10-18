@@ -55,6 +55,7 @@ jobs:
           ROOT_IMAGE: ghcr.io/${{ github.repository }}:nightly
           I386_IMAGE: ghcr.io/${{ github.repository }}/i386:nightly
           AMD64_IMAGE: ghcr.io/${{ github.repository }}/amd64:nightly
+          SIGSEGV_IMAGE: ghcr.io/${{ github.repository }}/i386-sigsegv:nightly
         run: |
           set -Eeuo pipefail
 
@@ -99,6 +100,7 @@ jobs:
           root_version=not-checked
           i386_version=not-checked
           amd64_version=not-checked
+          sigsegv_version=not-checked
 
           if [ "${EVENT_NAME}" = schedule ]; then
             image_version() {
@@ -120,6 +122,9 @@ jobs:
             root_version="$(normalize_version "$(image_version "${ROOT_IMAGE}" || true)")"
             i386_version="$(normalize_version "$(image_version "${I386_IMAGE}" || true)")"
             amd64_version="$(normalize_version "$(image_version "${AMD64_IMAGE}" || true)")"
+            # Reported only. When a TF2 update breaks the pinned sigsegv
+            # release, gating on this image would rebuild every hour.
+            sigsegv_version="$(normalize_version "$(image_version "${SIGSEGV_IMAGE}" || true)")"
 
             if [ "${EVENT_SCHEDULE}" != '41 3 * * *' ] \
               && [ "${root_version}" = "${tf2_version}" ] \
@@ -138,6 +143,7 @@ jobs:
             echo "| Published root image | \`${root_version}\` |"
             echo "| Published i386 image | \`${i386_version}\` |"
             echo "| Published amd64 image | \`${amd64_version}\` |"
+            echo "| Published i386-sigsegv image | \`${sigsegv_version}\` |"
             echo
             if [ "${EVENT_SCHEDULE}" = '41 3 * * *' ]; then
               echo "Daily unconditional refresh: **true**"
@@ -254,3 +260,46 @@ jobs:
 
           publish_tags tf2-summon:test "${I386_IMAGE_TAGS}"
           publish_tags tf2-summon:amd64-test "${AMD64_IMAGE_TAGS}"
+
+      # The sigsegv variant follows the published main images, so an extension
+      # broken by a TF2 update cannot hold them back.
+      - name: Generate sigsegv image metadata
+        id: meta_sigsegv
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository }}/i386-sigsegv
+          tags: |
+            type=sha,format=long,enable=${{ github.event_name != 'schedule' }}
+            type=raw,value=nightly,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build sigsegv image
+        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7
+        with:
+          source: .
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta_sigsegv.outputs.bake-file-labels }}
+          targets: image-sigsegv
+          load: true
+          set: |
+            image-sigsegv.tags=tf2-summon:sigsegv-test
+
+      - name: Test sigsegv image contract
+        env:
+          SUMMON_EXACT: "1"
+          EXPECT_SIGSEGV: "1"
+        run: tests/contract.sh tf2-summon:sigsegv-test i386
+
+      - name: Publish sigsegv image tags
+        if: github.event_name != 'pull_request'
+        env:
+          SIGSEGV_IMAGE_TAGS: ${{ steps.meta_sigsegv.outputs.tags }}
+        run: |
+          while IFS= read -r tag; do
+            test -n "${tag}" || continue
+            docker tag tf2-summon:sigsegv-test "${tag}"
+            docker push "${tag}"
+          done <<<"${SIGSEGV_IMAGE_TAGS}"
