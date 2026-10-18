@@ -87,10 +87,13 @@ disposable containers and copies logs out before shutdown.
 
 Additional SRCDS arguments are passed after the image name. The image defaults
 to `+sv_pure 1 +map cp_badlands +maxplayers 24` when no arguments are supplied.
+Supplied arguments replace these defaults, so pass `+sv_pure` explicitly;
+without it the server runs at `sv_pure 0`.
 
-Summon sets `SUMMON_START_MAP` while retaining `+map cp_badlands` as a
-command-line fallback. Before SRCDS starts, the entrypoint fetches a missing
-uncompressed BSP from `SM_MAP_DOWNLOAD_BASE`. It installs the file atomically
+Summon passes `+sv_pure 2` and sets `SUMMON_START_MAP` while retaining
+`+map cp_badlands` as a command-line fallback. Before SRCDS starts, the
+entrypoint fetches a missing uncompressed BSP from `SM_MAP_DOWNLOAD_BASE`.
+It installs the file atomically
 only after validating its Source BSP header and lump bounds, applies a 512 MiB
 download ceiling, then starts directly on the requested map. Invalid names and
 missing, corrupt, oversized, or slow downloads leave the bundled `cp_badlands`
