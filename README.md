@@ -21,6 +21,25 @@ binaries. Their dependent optional plugins are unavailable in the `/amd64`
 variant until upstream Linux x86-64 ports exist; Summon, Map Downloader,
 Metamod:Source, SourceMod, and RCON are covered by the 64-bit image contract.
 
+### sigsegv variant
+
+`ghcr.io/cometsmarsblackberry/tf2-summon/i386-sigsegv:nightly` is the `/i386`
+image plus the Optimize-Only package of
+[sigsegv-mvm](https://github.com/potato-tf/sigsegv-mvm), an extension that
+reduces server CPU usage, mainly in snapshot networking. It is experimental
+and intended for test deployments. The extension is the image's only
+difference from `/i386`, so the two can be compared directly.
+
+The pinned release and its checksum are in `docker/sigsegv/Dockerfile`, and
+the extension's settings are in `docker/sigsegv/sigsegv_convars.cfg`. The
+settings enable the CPU-only optimizations with one networking worker thread
+for 2-vCPU servers. They disable the lag-compensation culling, the SourceTV
+optimization, and the Mann vs. Machine mods.
+
+The extension hooks game internals, so a TF2 update can break it until
+upstream publishes a fix and the pin is updated. CI therefore builds,
+tests, and publishes this variant only after the main images are published.
+
 ## Run
 
 Summon normally starts the image automatically. A minimal manual launch is:
@@ -93,18 +112,26 @@ Docker Buildx 0.17 or newer is required because the build uses local target
 contexts to keep every layer in this repository:
 
 `base` → `sourcemod` → `core-addons` → `competitive-assets` → final image
+→ sigsegv variant
 
 The core addons target contains general-purpose SourceMod extensions and
 plugins. The competitive assets target adds league configs, game modes, and
 match integrations. The root Dockerfile applies only the Summon-specific
-plugins, configuration, metadata, and runtime policy.
+plugins, configuration, metadata, and runtime policy. The `image-sigsegv`
+target adds the sigsegv extension on top of the 32-bit image.
 
 ```bash
-docker buildx bake image image-amd64 --load
+docker buildx bake image image-amd64 image-sigsegv --load
 tests/validate.sh
 tests/contract.sh tf2-summon:local i386
 tests/contract.sh tf2-summon:amd64-local amd64
+EXPECT_SIGSEGV=1 tests/contract.sh tf2-summon:sigsegv-local i386
 ```
+
+`EXPECT_SIGSEGV=1` also checks that the extension loaded, that none of its
+mods failed to load, and that its settings took effect, then runs 12 bots for
+30 seconds to exercise its threaded networking. Without it, the contract
+checks that the image does not contain the extension.
 
 Set `SUMMON_EXACT=1` to exercise Summon's fixed host ports and FakeIP launch
 path. Set `CONTAINER_RUNTIME=podman` to run the same contract with rootless
