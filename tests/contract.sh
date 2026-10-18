@@ -6,6 +6,7 @@ server_arch="${2:-i386}"
 container_name="tf2-summon-contract-${RANDOM}-$$"
 container_runtime="${CONTAINER_RUNTIME:-docker}"
 summon_exact="${SUMMON_EXACT:-0}"
+expect_sigsegv="${EXPECT_SIGSEGV:-0}"
 rcon_password="summon-rcon-test"
 wait_status_file=""
 
@@ -54,6 +55,14 @@ case "${summon_exact}" in
     ;;
 esac
 
+case "${expect_sigsegv}" in
+  0 | 1) ;;
+  *)
+    echo "EXPECT_SIGSEGV must be 0 or 1" >&2
+    exit 1
+    ;;
+esac
+
 command -v "${container_runtime}" >/dev/null 2>&1 || {
   echo "Container runtime not found: ${container_runtime}" >&2
   exit 1
@@ -84,6 +93,15 @@ fi
 if [ -n "${TF2_SERVER_VERSION:-}" ]; then
   test "${image_tf2_server_version}" = "${TF2_SERVER_VERSION}"
 fi
+image_sigsegv_release="$(
+  "${container_runtime}" image inspect \
+    --format '{{index .Config.Labels "tf2.server.sigsegv"}}' "${image_name}"
+)"
+if [ "${expect_sigsegv}" = 1 ]; then
+  test -n "${image_sigsegv_release}"
+else
+  test -z "${image_sigsegv_release}"
+fi
 "${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
   | grep -Fxq "SRCDS_EXEC=${srcds_exec}"
 "${container_runtime}" image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "${image_name}" \
@@ -95,6 +113,7 @@ fi
   -e EXPECTED_SERVER_BINARY="${server_binary}" \
   -e EXPECTED_ELF_CLASS="${elf_class}" \
   -e EXPECTED_TF2_SERVER_VERSION="${image_tf2_server_version}" \
+  -e EXPECTED_SIGSEGV="${expect_sigsegv}" \
   "${image_name}" -lc '
   set -Eeuo pipefail
   trap "status=\$?; echo \"Static image contract failed at line \${LINENO}: \${BASH_COMMAND}\" >&2; exit \${status}" ERR
@@ -143,6 +162,18 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx
+
+  sigsegv_extensions=/home/tf2/server/tf/addons/sourcemod/extensions
+  if [ "${EXPECTED_SIGSEGV}" = 1 ]; then
+    test -f "${sigsegv_extensions}/sigsegv-optimize-only.autoload"
+    test -f "${sigsegv_extensions}/sigsegv-optimize-only.ext.2.tf2.so"
+    test -f "${sigsegv_extensions}/x64/sigsegv-optimize-only.ext.2.tf2.so"
+    test -d /home/tf2/server/tf/addons/sourcemod/gamedata/sigsegv
+    test -f /home/tf2/server/tf/cfg/sigsegv_convars.cfg
+  else
+    test ! -e "${sigsegv_extensions}/sigsegv-optimize-only.autoload"
+    test ! -e /home/tf2/server/tf/cfg/sigsegv_convars.cfg
+  fi
 
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
   ! grep -Fq "not found" /tmp/rcon-ldd
@@ -212,6 +243,34 @@ plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
 
+if [ "${expect_sigsegv}" = 1 ]; then
+  extension_output="$("${rcon[@]}" 'sm exts list')"
+  grep -Eq '^\[[0-9]+\] sigsegv ' <<<"${extension_output}"
+
+  # A TF2 update can move code that the extension patches. The affected mods
+  # then report FAILED instead of loading.
+  mods_output="$("${rcon[@]}" 'sig_list_mods')"
+  if grep -Fq FAILED <<<"${mods_output}"; then
+    echo "sigsegv mods failed to load:" >&2
+    echo "${mods_output}" >&2
+    exit 1
+  fi
+  for mod in SendProp_Optimize Virtual_Call_Optimize Attributes_Optimize Input_Optimize SmokeStack_FS_Thrash; do
+    grep -Eq "[[:space:]]${mod}[[:space:]]+OK[[:space:]]" <<<"${mods_output}"
+  done
+  for mod in Func_Optimize HLTV_Optimize Idle_Optimize Filesystem_Optimize; do
+    grep -Eq "[[:space:]]${mod}[[:space:]]+DISABLED[[:space:]]" <<<"${mods_output}"
+  done
+  grep -Fq '"sig_network_threads" = "1"' <<<"$("${rcon[@]}" 'sig_network_threads')"
+
+  # Bots and SourceTV run the extension's threaded entity packing every tick.
+  # After a TF2 update, mismatched engine structures crash the server here.
+  "${rcon[@]}" 'mp_tournament 0; tf_bot_join_after_player 0; tf_bot_quota_mode normal; tf_bot_quota 12' >/dev/null
+  sleep 30
+  grep -Eq 'players[[:space:]]*:[[:space:]]*0 humans, 1[2-9] bots' <<<"$("${rcon[@]}" status)"
+  "${rcon[@]}" 'tf_bot_quota 0; tf_bot_kick all; mp_tournament 1' >/dev/null
+fi
+
 owner_commands_output="$("${rcon[@]}" 'sm_summon_reload_owner_commands')"
 grep -Eq 'Loaded [1-9][0-9]* reservation-owner commands\.' <<<"${owner_commands_output}"
 
@@ -277,4 +336,4 @@ while "${container_runtime}" container inspect "${container_name}" >/dev/null 2>
 done
 
 trap - EXIT
-echo "Image contract passed with ${container_runtime} (server_arch=${server_arch}, SUMMON_EXACT=${summon_exact}): ${image_name}"
+echo "Image contract passed with ${container_runtime} (server_arch=${server_arch}, SUMMON_EXACT=${summon_exact}, EXPECT_SIGSEGV=${expect_sigsegv}): ${image_name}"

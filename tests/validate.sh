@@ -17,6 +17,8 @@ required_files=(
   docker/sourcemod/Dockerfile
   docker/core-addons/Dockerfile
   docker/competitive-assets/Dockerfile
+  docker/sigsegv/Dockerfile
+  docker/sigsegv/sigsegv_convars.cfg
   cfg/server.cfg.template
   cfg/summon_reset.cfg
   plugins/autoreload.smx
@@ -48,10 +50,14 @@ grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
 grep -Fqx 'FROM tf2-summon-sourcemod' docker/core-addons/Dockerfile
 grep -Fqx 'FROM tf2-summon-core-addons' docker/competitive-assets/Dockerfile
 grep -Fqx 'FROM tf2-summon-competitive-assets' Dockerfile
+grep -Fqx 'FROM tf2-summon-image' docker/sigsegv/Dockerfile
 grep -Fq 'tf2-summon-base = "target:base"' docker-bake.hcl
 grep -Fq 'tf2-summon-sourcemod = "target:sourcemod"' docker-bake.hcl
 grep -Fq 'tf2-summon-core-addons = "target:core-addons"' docker-bake.hcl
 grep -Fq 'tf2-summon-competitive-assets = "target:competitive-assets"' docker-bake.hcl
+grep -Fq 'tf2-summon-image = "target:image"' docker-bake.hcl
+# The sigsegv variant stays out of the main image's cfg overlay.
+test ! -e cfg/sigsegv_convars.cfg
 grep -Fq 'target "image-amd64"' docker-bake.hcl
 grep -Fq 'SRCDS_EXEC         = "srcds_run_64"' docker-bake.hcl
 grep -Fq 'TF2_SERVER_ARCH    = "amd64"' docker-bake.hcl
