@@ -10,7 +10,7 @@ variable "TF2_SERVER_VERSION" {
 # local checkout (for example ../summon/tf2-reservation-plugin) to build an image
 # with unpublished plugin changes.
 variable "SUMMON_PLUGIN_SOURCE" {
-  default = "https://github.com/cometsmarsblackberry/summon.git#9fe0993483e24b3b53e5584686f6f29d056a215b:tf2-reservation-plugin"
+  default = "https://github.com/cometsmarsblackberry/summon.git#8394c31e2b152681d8267cd6011780f27f2dfeda:tf2-reservation-plugin"
 }
 
 target "docker-metadata-action" {}
