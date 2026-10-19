@@ -8,7 +8,7 @@ WORKDIR /summon-plugins
 
 # Includes for Summon's optional logs.tf and demos.tf upload forwards, matching
 # the F2 plugin release and demos.tf commit installed in competitive-assets.
-ARG LOGSTF_INC_VERSION=20250908-1757334414124
+ARG LOGSTF_INC_VERSION=20260717-1784284363049
 ARG LOGSTF_INC_CHECKSUM=b6db02a3cda283215db7059cf3a58e05c928520e29e4507ace2f9307ccb5d95a
 ADD --checksum=sha256:${LOGSTF_INC_CHECKSUM} https://raw.githubusercontent.com/F2/F2s-sourcemod-plugins/${LOGSTF_INC_VERSION}/logstf/logstf.inc include/logstf.inc
 ARG DEMOSTF_INC_COMMIT=467a8858e642729c2bdbc769a28c7d450a2c1123
