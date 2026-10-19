@@ -60,6 +60,9 @@ RUN unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
   && cp fbtf_cfg/* "${PLUGIN_INSTALL_DIR}/cfg/"
 
 # RGL Configs + Plugins (all plugins disabled)
+# rgl_6s_5cp_match and rgl_6s_koth_match are deprecated stubs that only print
+# the names of their replacements, so they are left out of the config menus.
+# demo_check_no_discord fails to load without its phrases file.
 ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
 ARG RGL_CONFIGS_VERSION=v365
 ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
@@ -67,9 +70,11 @@ ARG RGL_CONFIGS_CHECKSUM=671e5a2c2b7432212f1ab9c73253de6383d1483cb12b30a45f1c08a
 ADD --checksum=sha256:${RGL_CONFIGS_CHECKSUM} ${RGL_CONFIGS_URL} .
 RUN unzip -q "${RGL_CONFIGS_FILE_NAME}" \
   && cp "cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/" \
-  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" \
+  && rm "${PLUGIN_INSTALL_DIR}/cfg/"rgl_6s_{5cp,koth}_match.cfg \
+  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations" \
   && cp "addons/sourcemod/plugins/"{config_checker,rglqol,updater,demo_check_no_discord,rglupdater}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
-  && cp "addons/sourcemod/plugins/disabled/"{p4sstime,roundtimer_override}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/"
+  && cp "addons/sourcemod/plugins/disabled/"{p4sstime,roundtimer_override}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
+  && cp "addons/sourcemod/translations/demo_check.phrases.txt" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations/"
 
 # ozfortress Configs (pinned to commit)
 # The Summer Cup (ozfortress_sc*) configs target Team Comtress 2, not stock TF2.
