@@ -346,6 +346,8 @@ fi
   test -f /home/tf2/server/tf/cfg/sourcemod/sm_autoreload.cfg
   test ! -e /home/tf2/server/tf/cfg/sm_autoreload.cfg
   grep -Fxq "https://example.invalid/motd/contract" /home/tf2/server/tf/cfg/motd.txt
+  grep -Fq "motdfile_text \"cfg/motd_text.txt\"" /home/tf2/server/tf/cfg/server.cfg
+  grep -Fxq "Reserve your own server at example.invalid" /home/tf2/server/tf/cfg/motd_text.txt
   grep -Fq "\"STEAM_0:1:12345\" \"99:z\"" /home/tf2/server/tf/addons/sourcemod/configs/admins_simple.ini
   grep -Fq "\"STEAM_0:0:67890\" \"99:z\"" /home/tf2/server/tf/addons/sourcemod/configs/admins_simple.ini
   test -d /home/tf2/server/tf/addons/sourcemod/logs
