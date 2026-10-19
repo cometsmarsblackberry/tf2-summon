@@ -148,6 +148,7 @@ fi
   test -f /home/tf2/server/tf/cfg/rgl_6s_5cp_match_half1.cfg
   test ! -e /home/tf2/server/tf/cfg/rgl_6s_5cp_match.cfg
   test ! -e /home/tf2/server/tf/cfg/rgl_6s_koth_match.cfg
+  test ! -e /home/tf2/server/tf/cfg/rgl_mm_5cp_cup.cfg
   test -f /home/tf2/server/tf/cfg/etf2l_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/fbtf_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/ozfortress_6v6_5cp.cfg
@@ -165,6 +166,7 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx
   test -f /home/tf2/server/tf/addons/sourcemod/translations/demo_check.phrases.txt
+  test -f /home/tf2/server/tf/addons/sourcemod/gamedata/p4sstime.txt
   for plugin in soap_tf2dm soap_tournament; do
     test -f "/home/tf2/server/tf/addons/sourcemod/plugins/disabled/${plugin}.smx"
     test ! -e "/home/tf2/server/tf/addons/sourcemod/plugins/${plugin}.smx"
@@ -301,12 +303,14 @@ grep -Fq 'SOAP Tournament' <<<"${plugin_output}"
 "${container_runtime}" exec "${container_name}" \
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/soap_tournament.smx
 
-# RGL's plugins run only under RGL configs. Its QoL plugin unloads Wait For
-# STV, which Summon loads again when another league's config replaces it.
+# RGL's plugins run only under RGL configs, including roundtimer_override,
+# which RGL configs load from plugins/disabled/. RGL's QoL plugin unloads Wait
+# For STV, which Summon loads again when another league's config replaces it.
 "${rcon[@]}" 'sm_config rgl_6s_5cp_match_half1' >/dev/null
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fq 'RGL.gg QoL Tweaks' <<<"${plugin_output}"
 grep -Fq 'Demo Check (No Discord)' <<<"${plugin_output}"
+grep -Fq 'Roundtimer Override' <<<"${plugin_output}"
 if grep -Fq 'Wait For STV' <<<"${plugin_output}"; then
   echo "Wait For STV is still loaded under an RGL config" >&2
   exit 1
@@ -314,7 +318,7 @@ fi
 
 "${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
-if grep -Eq 'RGL\.gg|Config Checker|Demo Check|"Updater"' <<<"${plugin_output}"; then
+if grep -Eq 'RGL\.gg|Config Checker|Demo Check|"Updater"|Roundtimer Override' <<<"${plugin_output}"; then
   echo "RGL plugins are still loaded under an ETF2L config" >&2
   exit 1
 fi
