@@ -321,4 +321,50 @@ fi
 (RCON_PASSWORD="contract-secret" require_rcon_password) \
   || fail "entrypoint rejected an explicit RCON password"
 
-echo "Entrypoint startup-map tests passed"
+new_case motd_generation
+mkdir -p "${SERVER_DIR}/tf/cfg"
+(
+  MOTD_URL="https://summon.example.test/motd/token"
+  LOGS_TF_APIKEY="logs-key"
+  DEMOS_TF_APIKEY="demos-key"
+  generate_motd
+  [ "$MOTD" = "cfg/motd.txt" ] || fail "MOTD was not pointed at the generated file"
+  [ "$MOTD_TEXT" = "cfg/motd_text.txt" ] || fail "MOTD_TEXT was not pointed at the generated file"
+)
+grep -Fxq "https://summon.example.test/motd/token" "${SERVER_DIR}/tf/cfg/motd.txt" \
+  || fail "MOTD file does not contain the MOTD URL"
+text_motd="${SERVER_DIR}/tf/cfg/motd_text.txt"
+grep -Fxq "Welcome to summon.example.test" "$text_motd" \
+  || fail "text MOTD does not name the MOTD URL's host"
+grep -Fxq "Reserve your own server at summon.example.test" "$text_motd" \
+  || fail "text MOTD does not link to the MOTD URL's host"
+grep -Fxq "Logs and SourceTV demos are uploaded to logs.tf and demos.tf." "$text_motd" \
+  || fail "text MOTD does not mention configured uploads"
+! grep -Fq "token" "$text_motd" || fail "text MOTD leaked the MOTD URL path"
+[ "$(stat -c '%s' "$text_motd")" -le 2048 ] || fail "text MOTD exceeds SRCDS's 2048-byte limit"
+
+new_case motd_without_uploads
+mkdir -p "${SERVER_DIR}/tf/cfg"
+(
+  MOTD_URL="http://127.0.0.1:8765/motd/token"
+  LOGS_TF_APIKEY=""
+  DEMOS_TF_APIKEY=""
+  generate_motd
+)
+grep -Fxq "Welcome to 127.0.0.1:8765" "${SERVER_DIR}/tf/cfg/motd_text.txt" \
+  || fail "text MOTD does not keep the MOTD URL's port"
+! grep -Fq "uploaded" "${SERVER_DIR}/tf/cfg/motd_text.txt" \
+  || fail "text MOTD mentions uploads without API keys"
+
+new_case motd_without_url
+mkdir -p "${SERVER_DIR}/tf/cfg"
+(
+  MOTD_URL=""
+  MOTD_TEXT=""
+  generate_motd
+  [ -z "$MOTD_TEXT" ] || fail "MOTD_TEXT was set without a MOTD URL"
+)
+[ ! -e "${SERVER_DIR}/tf/cfg/motd_text.txt" ] \
+  || fail "text MOTD was generated without a MOTD URL"
+
+echo "Entrypoint tests passed"

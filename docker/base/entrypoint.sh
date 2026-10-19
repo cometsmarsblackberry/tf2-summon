@@ -276,11 +276,56 @@ quit() {
   exit 0
 }
 
+# Clients with cl_disablehtmlmotd 1 see this instead of the MOTD page. SRCDS
+# refuses text MOTDs over 2048 bytes, and SourceTV records the text in demos,
+# so it must not contain passwords. The text panel uses a proportional font,
+# so do not align columns with spaces.
+write_text_motd() {
+  local site="$1"
+  local uploads=""
+
+  if [ -n "${LOGS_TF_APIKEY:-}" ] && [ -n "${DEMOS_TF_APIKEY:-}" ]; then
+    uploads="Logs and SourceTV demos are uploaded to logs.tf and demos.tf."
+  elif [ -n "${LOGS_TF_APIKEY:-}" ]; then
+    uploads="Logs are uploaded to logs.tf."
+  elif [ -n "${DEMOS_TF_APIKEY:-}" ]; then
+    uploads="SourceTV demos are uploaded to demos.tf."
+  fi
+
+  cat <<EOF
+Welcome to ${site}
+
+This server is a private reservation. Type !who in chat to see the reservation number, who reserved it and how much time is left.
+
+Commands for everyone
+  !who - reservation info
+  !pause, !unpause - pause the game (if the config allows it)
+
+Commands for the reservation owner
+  !admin - owner menu
+  !map <name> - change map
+  !config <name> - load a competitive config
+  !restart - restart the match
+  !cmd <command> - run a server command
+  !end - end the reservation early
+${uploads:+
+$uploads
+}
+Reserve your own server at ${site}
+EOF
+}
+
 generate_motd() {
   if [ -n "$MOTD_URL" ]; then
     local motd_file="${SERVER_DIR}/tf/cfg/motd.txt"
     echo "$MOTD_URL" > "$motd_file"
     export MOTD="cfg/motd.txt"
+
+    # Name the site after the MOTD page's host so each deployment links to itself.
+    local site="${MOTD_URL#*://}"
+    site="${site%%/*}"
+    write_text_motd "$site" > "${SERVER_DIR}/tf/cfg/motd_text.txt"
+    export MOTD_TEXT="cfg/motd_text.txt"
   fi
 }
 

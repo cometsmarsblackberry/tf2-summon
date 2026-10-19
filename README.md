@@ -75,7 +75,7 @@ disposable containers and copies logs out before shutdown.
 | `SUMMON_START_MAP` | empty | Map to fetch and launch before SRCDS starts; unavailable maps fall back to `cp_badlands` |
 | `DEMOS_TF_APIKEY` | empty | demos.tf API key |
 | `LOGS_TF_APIKEY` | empty | logs.tf API key |
-| `MOTD_URL` | empty | URL written to the generated MOTD file |
+| `MOTD_URL` | empty | URL written to the generated MOTD file. Also enables the generated text MOTD, which names the URL's host as the site |
 | `SM_ADMINS` | empty | Comma-separated Steam IDs granted SourceMod root access |
 | `ENABLE_FAKE_IP` | `0` | Set to `1` to enable Steam Datagram Relay FakeIP |
 | `SERVER_TOKEN` | empty | Game server login token |
