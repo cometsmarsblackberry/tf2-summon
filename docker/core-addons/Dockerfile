@@ -31,9 +31,9 @@ RUN unzip -q -o "${NEOCURL_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemo
 
 # STAC Anti-Cheat
 ARG STAC_FILE_NAME=stac.zip
-ARG STAC_VERSION=v6.3.8
+ARG STAC_VERSION=v6.3.13
 ARG STAC_URL=https://github.com/sapphonie/StAC-tf2/releases/download/${STAC_VERSION}/${STAC_FILE_NAME}
-ARG STAC_CHECKSUM=ec64fc4f697754038526591cc8ef6a99d331b5e962eac36d968dfb25c0c69957
+ARG STAC_CHECKSUM=2bcbd1930439cf1924242808b443a7f2618242c3612623fc2e6222b3365ad313
 ADD --checksum=sha256:${STAC_CHECKSUM} ${STAC_URL} .
 RUN unzip -q -o "${STAC_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
@@ -114,8 +114,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 WORKDIR /compile
 
 # Download SourceMod for the compiler (use latest stable)
-ARG SOURCEMOD_URL=https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7221-linux.tar.gz
-ARG SOURCEMOD_CHECKSUM=8924d7cd664a52ff0dd84a493949040865d0984b01f3c4b569db7357c592b56f
+ARG SOURCEMOD_URL=https://sm.alliedmods.net/smdrop/1.12/sourcemod-1.12.0-git7255-linux.tar.gz
+ARG SOURCEMOD_CHECKSUM=02be752ddc25d344a379800df9395a2847ab85b71acea9167fdca8163010d5b9
 RUN wget -q "${SOURCEMOD_URL}" -O sourcemod.tar.gz \
     && echo "${SOURCEMOD_CHECKSUM}  sourcemod.tar.gz" | sha256sum -c - \
     && mkdir -p /sourcemod \
