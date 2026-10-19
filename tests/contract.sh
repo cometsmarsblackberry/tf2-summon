@@ -162,6 +162,10 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx
+  for plugin in soap_tf2dm soap_tournament; do
+    test -f "/home/tf2/server/tf/addons/sourcemod/plugins/disabled/${plugin}.smx"
+    test ! -e "/home/tf2/server/tf/addons/sourcemod/plugins/${plugin}.smx"
+  done
 
   sigsegv_extensions=/home/tf2/server/tf/addons/sourcemod/extensions
   if [ "${EXPECTED_SIGSEGV}" = 1 ]; then
@@ -242,6 +246,12 @@ grep -Eq 'map[[:space:]]*:[[:space:]]*cp_badlands' <<<"${status_output}"
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
+# SOAP DM runs only under a competitive config. Without tournament mode no one
+# readies up, so it would never unload.
+if grep -Fqi 'SOAP' <<<"${plugin_output}"; then
+  echo "SOAP DM is loaded without a competitive config" >&2
+  exit 1
+fi
 
 if [ "${expect_sigsegv}" = 1 ]; then
   extension_output="$("${rcon[@]}" 'sm exts list')"
@@ -280,7 +290,19 @@ grep -Eq 'Loaded [1-9][0-9]* reservation-owner commands\.' <<<"${owner_commands_
 "${rcon[@]}" 'sm_reserve_ends_at "2000000000"' >/dev/null
 "${rcon[@]}" 'sm_reserve_backend_url "https://example.invalid"' >/dev/null
 "${rcon[@]}" 'sm_reserve_api_key "contract-key"' >/dev/null
+
+"${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
+plugin_output="$("${rcon[@]}" 'sm plugins list')"
+grep -Fq 'SOAP TF2 Deathmatch' <<<"${plugin_output}"
+grep -Fq 'SOAP Tournament' <<<"${plugin_output}"
+"${container_runtime}" exec "${container_name}" \
+  test -f /home/tf2/server/tf/addons/sourcemod/plugins/soap_tournament.smx
+
 "${rcon[@]}" 'sm_config summon_reset' >/dev/null
+if grep -Fqi 'SOAP' <<<"$("${rcon[@]}" 'sm plugins list')"; then
+  echo "SOAP DM is still loaded after summon_reset" >&2
+  exit 1
+fi
 
 # The quoted script expands variables inside the container, not in this shell.
 # shellcheck disable=SC2016
@@ -300,6 +322,10 @@ grep -Eq 'Loaded [1-9][0-9]* reservation-owner commands\.' <<<"${owner_commands_
   grep -Fq "\"STEAM_0:0:67890\" \"99:z\"" /home/tf2/server/tf/addons/sourcemod/configs/admins_simple.ini
   test -d /home/tf2/server/tf/addons/sourcemod/logs
   test -d /home/tf2/server/tf/logs
+  for plugin in soap_tf2dm soap_tournament; do
+    test -f "/home/tf2/server/tf/addons/sourcemod/plugins/disabled/${plugin}.smx"
+    test ! -e "/home/tf2/server/tf/addons/sourcemod/plugins/${plugin}.smx"
+  done
 '
 
 # Reproduce the pinned client's unbounded authentication wait. The entrypoint

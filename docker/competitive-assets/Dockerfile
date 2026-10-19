@@ -12,13 +12,17 @@ WORKDIR /download
 ARG PLUGIN_INSTALL_DIR=/server/tf
 RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
 
-# SOAP TF2DM
+# SOAP TF2DM (plugins disabled)
+# The Summon plugin enables SOAP when a competitive config is loaded. Outside
+# tournament mode no one readies up, so SOAP would never unload.
 ARG SOAP_DM_FILE_NAME=soap.zip
 ARG SOAP_DM_VERSION=4.4.9
 ARG SOAP_DM_URL=https://github.com/sapphonie/SOAP-TF2DM/releases/download/v${SOAP_DM_VERSION}/${SOAP_DM_FILE_NAME}
 ARG SOAP_DM_CHECKSUM=aee4474a3528087241bcd4d61b1a99feaf2fb0a942b41f7ca0c887eef61a624e
 ADD --checksum=sha256:${SOAP_DM_CHECKSUM} ${SOAP_DM_URL} .
-RUN unzip -q "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
+RUN unzip -q "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/" \
+  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" \
+  && mv "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"soap_{tf2dm,tournament}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/"
 
 # MGEMod
 ARG MGEMOD_FILE_NAME=mge.zip
