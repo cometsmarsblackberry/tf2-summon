@@ -60,21 +60,24 @@ RUN unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
   && cp fbtf_cfg/* "${PLUGIN_INSTALL_DIR}/cfg/"
 
 # RGL Configs + Plugins (all plugins disabled)
-# rgl_6s_5cp_match and rgl_6s_koth_match are deprecated stubs that only print
-# the names of their replacements, so they are left out of the config menus.
-# demo_check_no_discord fails to load without its phrases file.
+# demo_check_no_discord fails to load without its phrases file, and p4sstime
+# without its gamedata.
+# rgl_mm_5cp_cup is left out because it loads Enhanced Match Timer, which is not
+# shipped: once loaded, it moves Improved Match Timer to plugins/disabled/, and
+# the _pro configs that load Improved Match Timer would run without it.
 ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
-ARG RGL_CONFIGS_VERSION=v365
+ARG RGL_CONFIGS_VERSION=v390
 ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
-ARG RGL_CONFIGS_CHECKSUM=671e5a2c2b7432212f1ab9c73253de6383d1483cb12b30a45f1c08a3a418df8f
+ARG RGL_CONFIGS_CHECKSUM=e2b8338a3674ffe56cec5893dc87a2700e8cc4afec0921c61a2a658a8a03897d
 ADD --checksum=sha256:${RGL_CONFIGS_CHECKSUM} ${RGL_CONFIGS_URL} .
 RUN unzip -q "${RGL_CONFIGS_FILE_NAME}" \
   && cp "cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/" \
-  && rm "${PLUGIN_INSTALL_DIR}/cfg/"rgl_6s_{5cp,koth}_match.cfg \
-  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations" \
+  && rm "${PLUGIN_INSTALL_DIR}/cfg/rgl_mm_5cp_cup.cfg" \
+  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"{plugins/disabled,translations,gamedata} \
   && cp "addons/sourcemod/plugins/"{config_checker,rglqol,updater,demo_check_no_discord,rglupdater}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
   && cp "addons/sourcemod/plugins/disabled/"{p4sstime,roundtimer_override}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
-  && cp "addons/sourcemod/translations/demo_check.phrases.txt" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations/"
+  && cp "addons/sourcemod/translations/demo_check.phrases.txt" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/translations/" \
+  && cp "addons/sourcemod/gamedata/p4sstime.txt" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/gamedata/"
 
 # ozfortress Configs (pinned to commit)
 # The Summer Cup (ozfortress_sc*) configs target Team Comtress 2, not stock TF2.
