@@ -109,6 +109,11 @@ All players can use `!pause` and `!unpause` (or the silent `/pause` and
 `unpause`, preserving the bundled F2 pause plugin's five-second countdown and
 player state restoration. The `summon_reset` config disables pausing.
 
+The SOAP DM plugins ship in SourceMod's `plugins/disabled/`, so a server
+without a competitive config plays like stock TF2. Loading a competitive
+config through Summon enables SOAP's deathmatch until both teams ready up, and
+`summon_reset` disables it again.
+
 ## Build and test
 
 Docker Buildx 0.17 or newer is required because the build uses local target
