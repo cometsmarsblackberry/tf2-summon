@@ -6,6 +6,8 @@ cd "${repo_dir}"
 
 required_files=(
   Dockerfile
+  LICENSE
+  THIRD_PARTY_NOTICES.md
   docker-bake.hcl
   docker/base/Dockerfile
   docker/base/entrypoint.sh
@@ -36,6 +38,39 @@ done
 printf '%s  %s\n' \
   0e34864d17cdaa615b6cde3a45fec858aaa4d816c1072666045f7f5b774a83ed plugins/autoreload.smx \
   | sha256sum -c -
+
+# The third-party notices name the exact version or commit of every pinned
+# upstream download. Includes used only while compiling are not distributed.
+mapfile -t upstream_pins < <(
+  grep -hE '^ARG [A-Z0-9_]+_(VERSION|COMMIT|RELEASE)=' Dockerfile docker/*/Dockerfile \
+    | grep -vE '^ARG (TF2_SERVER_VERSION|[A-Z0-9_]+_INC_[A-Z]+)=' \
+    | cut -d= -f2-
+)
+test "${#upstream_pins[@]}" -gt 0
+for pin in "${upstream_pins[@]}"; do
+  [[ "${pin}" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Unexpected pinned upstream version format: ${pin}" >&2
+    exit 1
+  }
+  # Match whole versions, so v3.1 does not match v3.1.2.
+  grep -Eq -- "(^|[^A-Za-z0-9._-])v?${pin//./\\.}($|[^A-Za-z0-9._-])" THIRD_PARTY_NOTICES.md || {
+    echo "THIRD_PARTY_NOTICES.md does not list the pinned upstream version ${pin}" >&2
+    exit 1
+  }
+done
+
+for license in licenses/*; do
+  grep -Fq -- "${license}" THIRD_PARTY_NOTICES.md || {
+    echo "THIRD_PARTY_NOTICES.md does not reference ${license}" >&2
+    exit 1
+  }
+done
+while IFS= read -r license; do
+  test -f "${license}" || {
+    echo "THIRD_PARTY_NOTICES.md references missing ${license}" >&2
+    exit 1
+  }
+done < <(grep -oE 'licenses/[A-Za-z0-9._-]+' THIRD_PARTY_NOTICES.md | sort -u)
 
 # Summon's plugins are compiled during the image build from a pinned summon commit.
 test ! -e plugins/summon.smx

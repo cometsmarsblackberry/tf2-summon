@@ -184,6 +184,17 @@ fi
     test ! -e /home/tf2/server/tf/cfg/sigsegv_convars.cfg
   fi
 
+  notices_dir=/usr/share/doc/tf2-summon
+  test -f "${notices_dir}/LICENSE"
+  test -f "${notices_dir}/THIRD_PARTY_NOTICES.md"
+  test -f /home/tf2/server/tf/addons/sourcemod/LICENSE.txt
+  grep -oE "licenses/[A-Za-z0-9._-]+" "${notices_dir}/THIRD_PARTY_NOTICES.md" \
+    | sort -u >/tmp/notice-licenses
+  test -s /tmp/notice-licenses
+  while IFS= read -r license; do
+    test -f "${notices_dir}/${license}"
+  done </tmp/notice-licenses
+
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
   ! grep -Fq "not found" /tmp/rcon-ldd
 
