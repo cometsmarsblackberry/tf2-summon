@@ -1,48 +1,29 @@
 # tf2-summon
 
-A self-contained Team Fortress 2 reservation server image for
-[Summon](https://github.com/cometsmarsblackberry/summon). It includes the game
-server, Metamod:Source, SourceMod, competitive configs, reservation plugins,
-and the command-line RCON client expected by the Summon agent.
+The Team Fortress 2 server image used by
+[Summon](https://github.com/cometsmarsblackberry/summon). It bundles the TF2
+dedicated server, Metamod:Source, SourceMod, the Summon and Map Downloader
+plugins, league configs and plugins (RGL, ETF2L, ozfortress, and others), and
+the RCON client the Summon agent uses.
 
-The public images are available through GitHub Container Registry:
+## Images
 
-```bash
-docker pull ghcr.io/cometsmarsblackberry/tf2-summon/i386:nightly
-docker pull ghcr.io/cometsmarsblackberry/tf2-summon/amd64:nightly
-```
+| Image | Description |
+| --- | --- |
+| `ghcr.io/cometsmarsblackberry/tf2-summon/i386:nightly` | 32-bit SRCDS. Summon's default. |
+| `ghcr.io/cometsmarsblackberry/tf2-summon/amd64:nightly` | Native 64-bit SRCDS. Plugins that need 32-bit-only extensions are unavailable. |
+| `ghcr.io/cometsmarsblackberry/tf2-summon/i386-sigsegv:nightly` | Experimental. `/i386` plus the Optimize-Only package of [sigsegv-mvm](https://github.com/potato-tf/sigsegv-mvm), which reduces server CPU usage. It can break after a TF2 update until upstream releases a fix. |
 
-Both images use the `linux/amd64` container platform. The `/i386` image runs
-32-bit SRCDS, while `/amd64` runs the native 64-bit TF2 server. The root image
-name remains an alias for `/i386` for compatibility.
+All images are `linux/amd64`. The image name without a suffix is an alias for
+`/i386`.
 
-Some bundled third-party native SourceMod extensions only provide 32-bit Linux
-binaries. Their dependent optional plugins are unavailable in the `/amd64`
-variant until upstream Linux x86-64 ports exist; Summon, Map Downloader,
-Metamod:Source, SourceMod, and RCON are covered by the 64-bit image contract.
-
-### sigsegv variant
-
-`ghcr.io/cometsmarsblackberry/tf2-summon/i386-sigsegv:nightly` is the `/i386`
-image plus the Optimize-Only package of
-[sigsegv-mvm](https://github.com/potato-tf/sigsegv-mvm), an extension that
-reduces server CPU usage, mainly in snapshot networking. It is experimental
-and intended for test deployments. The extension is the image's only
-difference from `/i386`, so the two can be compared directly.
-
-The pinned release and its checksum are in `docker/sigsegv/Dockerfile`, and
-the extension's settings are in `docker/sigsegv/sigsegv_convars.cfg`. The
-settings enable the CPU-only optimizations with one networking worker thread
-for 2-vCPU servers. They disable the lag-compensation culling, the SourceTV
-optimization, and the Mann vs. Machine mods.
-
-The extension hooks game internals, so a TF2 update can break it until
-upstream publishes a fix and the pin is updated. CI therefore builds,
-tests, and publishes this variant only after the main images are published.
+CI checks hourly for a new TF2 server version and also rebuilds once a day. It
+publishes a new `nightly` only after the contract tests pass. Running
+containers are not updated: pull the image and recreate them.
 
 ## Run
 
-Summon normally starts the image automatically. A minimal manual launch is:
+Summon starts the image automatically. To launch it by hand:
 
 ```bash
 docker run --rm \
@@ -51,14 +32,16 @@ docker run --rm \
   -p 27020:27020/udp \
   -e RCON_PASSWORD=change-me \
   -e SERVER_PASSWORD=join-password \
-  -e SERVER_HOSTNAME='Summon TF2 server' \
   ghcr.io/cometsmarsblackberry/tf2-summon/i386:nightly \
   +map cp_badlands
 ```
 
-The container exposes game/RCON traffic on TCP and UDP port 27015 and
-SourceTV on UDP port 27020. It intentionally declares no volumes: Summon uses
-disposable containers and copies logs out before shutdown.
+Port 27015 carries game and RCON traffic, and 27020/udp carries SourceTV. The
+container is meant to be disposable and declares no volumes.
+
+Arguments after the image name are passed to SRCDS and replace the default
+`+sv_pure 1 +map cp_badlands +maxplayers 24`. If you pass arguments, include
+`+sv_pure` yourself, or the server runs at `sv_pure 0`.
 
 ## Configuration
 
@@ -72,10 +55,10 @@ disposable containers and copies logs out before shutdown.
 | `STV_PASSWORD` | empty | SourceTV password |
 | `DOWNLOAD_URL` | empty | FastDL base URL |
 | `SM_MAP_DOWNLOAD_BASE` | `https://fastdl.serveme.tf/maps` | Map download base URL |
-| `SUMMON_START_MAP` | empty | Map to fetch and launch before SRCDS starts; unavailable maps fall back to `cp_badlands` |
+| `SUMMON_START_MAP` | empty | Map to download and start on. Unavailable maps fall back to `cp_badlands` |
 | `DEMOS_TF_APIKEY` | empty | demos.tf API key |
 | `LOGS_TF_APIKEY` | empty | logs.tf API key |
-| `MOTD_URL` | empty | URL written to the generated MOTD file. Also enables the generated text MOTD, which names the URL's host as the site |
+| `MOTD_URL` | empty | URL for the MOTD. Also enables a text MOTD naming the URL's host |
 | `SM_ADMINS` | empty | Comma-separated Steam IDs granted SourceMod root access |
 | `ENABLE_FAKE_IP` | `0` | Set to `1` to enable Steam Datagram Relay FakeIP |
 | `SERVER_TOKEN` | empty | Game server login token |
@@ -85,48 +68,15 @@ disposable containers and copies logs out before shutdown.
 | `STEAM_PORT` | `27018` | Steam master-server port |
 | `STV_PORT` | `27020` | SourceTV port |
 
-Additional SRCDS arguments are passed after the image name. The image defaults
-to `+sv_pure 1 +map cp_badlands +maxplayers 24` when no arguments are supplied.
-Supplied arguments replace these defaults, so pass `+sv_pure` explicitly;
-without it the server runs at `sv_pure 0`.
-
-Summon passes `+sv_pure 2` and sets `SUMMON_START_MAP` while retaining
-`+map cp_badlands` as a command-line fallback. Before SRCDS starts, the
-entrypoint fetches a missing uncompressed BSP from `SM_MAP_DOWNLOAD_BASE`.
-It installs the file atomically
-only after validating its Source BSP header and lump bounds, applies a 512 MiB
-download ceiling, then starts directly on the requested map. Invalid names and
-missing, corrupt, oversized, or slow downloads leave the bundled `cp_badlands`
-startup unchanged.
-
-The runtime contract intentionally keeps the server at `/home/tf2/server`,
-including the RCON client at `/home/tf2/server/rcon` and game files at
-`/home/tf2/server/tf`.
-
-All players can use `!pause` and `!unpause` (or the silent `/pause` and
-`/unpause`) when the current config enables `sv_pausable 1`. `!pause` forwards
-`setpause`, so repeating it keeps the game paused. `!unpause` forwards
-`unpause`, preserving the bundled F2 pause plugin's five-second countdown and
-player state restoration. The `summon_reset` config disables pausing.
-
-The SOAP DM plugins ship in SourceMod's `plugins/disabled/`, so a server
-without a competitive config plays like stock TF2. Loading a competitive
-config through Summon enables SOAP's deathmatch until both teams ready up, and
-`summon_reset` disables it again.
+The Summon agent expects the server at `/home/tf2/server`, with the RCON
+client at `/home/tf2/server/rcon`. In-game commands, pausing, and how configs
+enable SOAP DM are described in the
+[plugin README](https://github.com/cometsmarsblackberry/summon/blob/main/tf2-reservation-plugin/README.md).
 
 ## Build and test
 
-Docker Buildx 0.17 or newer is required because the build uses local target
-contexts to keep every layer in this repository:
-
-`base` → `sourcemod` → `core-addons` → `competitive-assets` → final image
-→ sigsegv variant
-
-The core addons target contains general-purpose SourceMod extensions and
-plugins. The competitive assets target adds league configs, game modes, and
-match integrations. The root Dockerfile applies only the Summon-specific
-plugins, configuration, metadata, and runtime policy. The `image-sigsegv`
-target adds the sigsegv extension on top of the 32-bit image.
+Requires Docker Buildx 0.17 or newer. The first build downloads the TF2 server
+and takes a while.
 
 ```bash
 docker buildx bake image image-amd64 image-sigsegv --load
@@ -136,42 +86,31 @@ tests/contract.sh tf2-summon:amd64-local amd64
 EXPECT_SIGSEGV=1 tests/contract.sh tf2-summon:sigsegv-local i386
 ```
 
-`EXPECT_SIGSEGV=1` also checks that the extension loaded, that none of its
-mods failed to load, and that its settings took effect, then runs 12 bots for
-30 seconds to exercise its threaded networking. Without it, the contract
-checks that the image does not contain the extension.
+`validate.sh` checks the repository without building anything.
+`contract.sh` starts an image and checks the behavior Summon relies on. Set
+`SUMMON_EXACT=1` to also test Summon's fixed host ports and FakeIP launch, or
+`CONTAINER_RUNTIME=podman` to run the test with rootless Podman.
 
-Set `SUMMON_EXACT=1` to exercise Summon's fixed host ports and FakeIP launch
-path. Set `CONTAINER_RUNTIME=podman` to run the same contract with rootless
-Podman after loading the image into Podman's image store.
+Each stage of the image has its own Dockerfile:
 
-The Summon and Map Downloader plugins are compiled during the build with the
-image's own SourceMod compiler. Their source comes from the
-`tf2-reservation-plugin` directory of the Summon repository at the commit
-pinned by `SUMMON_PLUGIN_SOURCE` in `docker-bake.hcl`. To release plugin
-changes, push them to Summon and update that commit. To build an image with
-unpublished plugin changes, point the variable at a local checkout:
+`docker/base` (TF2 server) → `docker/sourcemod` → `docker/core-addons` →
+`docker/competitive-assets` → root `Dockerfile` (Summon plugins, configs, and
+runtime policy) → `docker/sigsegv`
+
+The Summon plugins are compiled during the build from Summon's
+`tf2-reservation-plugin` directory, at the commit pinned by
+`SUMMON_PLUGIN_SOURCE` in `docker-bake.hcl`. To ship plugin changes, push them
+to Summon and update that commit. To build with a local checkout:
 
 ```bash
 SUMMON_PLUGIN_SOURCE=../summon/tf2-reservation-plugin docker buildx bake image --load
 ```
 
-The first build downloads the current TF2 dedicated server and can take a
-while. GitHub Actions checks Valve's current TF2 server version hourly. When
-either published architecture is stale, it rebuilds and contract-tests both
-images before replacing the `nightly` tags. A daily unconditional rebuild also
-captures Steam depot updates that do not change the server compatibility
-version. Pushes, tags, pull requests, and manual runs still build
-unconditionally. Published images record the installed version in the
-`tf2.server.version` OCI label. Non-scheduled publishes retain the existing
-commit-SHA and semantic-version tag rules.
-
-The workflow publishes updated images but does not restart existing containers.
-Consumers must pull `nightly` and recreate their disposable server containers
-to use the new TF2 build.
-
 ## License
 
-The repository build files are available under the MIT License. Bundled game,
-plugin, extension, and configuration projects retain their respective
-licenses.
+The build files in this repository are MIT-licensed. Bundled projects keep
+their own licenses. [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) lists
+each one with its version and source, and [`licenses/`](licenses/) holds the
+license texts. Both are installed in the image under
+`/usr/share/doc/tf2-summon/`. When you update a pinned download, update its
+notice entry as well, or `tests/validate.sh` fails.
