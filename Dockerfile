@@ -53,6 +53,11 @@ COPY --chown=tf2 plugins/ ${SERVER_DIR}/tf/addons/sourcemod/plugins/
 COPY --chown=tf2 sourcemod/configs/ ${SERVER_DIR}/tf/addons/sourcemod/configs/
 COPY cfg/ ${SERVER_DIR}/tf/cfg/
 
+# License texts, third-party notices, and source locations for the bundled
+# software.
+COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/doc/tf2-summon/
+COPY licenses/ /usr/share/doc/tf2-summon/licenses/
+
 ARG SRCDS_EXEC=srcds_run
 ARG TF2_SERVER_ARCH=i386
 ARG TF2_SERVER_VERSION=unknown
