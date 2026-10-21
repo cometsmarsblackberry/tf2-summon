@@ -105,7 +105,9 @@ RUN unzip -q "${ULTITRIO_CONFIGS_FILE_NAME}" \
 # The AsiaFortress 6s 5CP config layers over rgl_6s_base and uses the Improved Match Timer.
 # The legacy AFC 10 configs (afcad, afckoth, afcpush) are intentionally omitted.
 # The CLTF2 and TFArena configs call the nonexistent "servercfg" command, which would leave
-# servercfgfile unset and skip re-executing the config after a map change.
+# servercfgfile unset and skip re-executing the config after a map change. serveme is
+# licensed under Apache-2.0, which requires changed files to say so, so each fixed config
+# gets a comment line in its upstream CRLF line endings.
 ARG SERVEME_CONFIGS_COMMIT=3c5f2bd9dce37d8f416881f93a87fbb7037c3efd
 ARG SERVEME_CONFIGS_FILE_NAME=serveme-${SERVEME_CONFIGS_COMMIT}.zip
 ARG SERVEME_CONFIGS_URL=https://github.com/Arie/serveme/archive/${SERVEME_CONFIGS_COMMIT}.zip
@@ -115,7 +117,10 @@ RUN unzip -q "${SERVEME_CONFIGS_FILE_NAME}" "serveme-${SERVEME_CONFIGS_COMMIT}/d
   && cd "serveme-${SERVEME_CONFIGS_COMMIT}/docker/tf2-cloud-server/base-configs/cfg" \
   && cp afc_6s_5cp_match_pro.cfg af_HL_{base,koth,koth_bo5,stopwatch}.cfg af_whitelist_HL.txt \
     cltf2_*.cfg tfarena_*.cfg ufl_base.cfg "${PLUGIN_INSTALL_DIR}/cfg/" \
-  && sed -i 's/^servercfg /servercfgfile /' "${PLUGIN_INSTALL_DIR}/cfg/"{cltf2,tfarena}_*.cfg
+  && grep -l '^servercfg ' "${PLUGIN_INSTALL_DIR}/cfg/"{cltf2,tfarena}_*.cfg \
+    | xargs sed -i \
+      -e 's/^servercfg /servercfgfile /' \
+      -e '1s|^|// Modified by tf2-summon: replaced "servercfg" with "servercfgfile".\r\n|'
 
 # Improved Match Timer
 ARG IMPROVED_MATCH_TIMER_COMMIT=28f1f9a03c07a072684fa3d4977a0898a85b0588
