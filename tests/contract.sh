@@ -162,6 +162,8 @@ fi
   test -f /home/tf2/server/tf/cfg/ufl_base.cfg
   test -z "$(grep -l "^servercfg[[:space:]]" /home/tf2/server/tf/cfg/*.cfg || true)"
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/spells_blocker.smx
+  test -f /home/tf2/server/tf/addons/sourcemod/plugins/mge.smx
+  test -f /home/tf2/server/tf/addons/sourcemod/plugins/mge_config_downloader.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/config_checker.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglupdater.smx
@@ -262,6 +264,10 @@ grep -Eq 'map[[:space:]]*:[[:space:]]*cp_badlands' <<<"${status_output}"
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
+grep -Fq 'MGE Config Auto-Downloader' <<<"${plugin_output}"
+# With sync on, the downloader would replace the image's MGEMod configs with
+# MGEMod's master branch.
+grep -Fq '"mgemod_autodownload_sync" = "0"' <<<"$("${rcon[@]}" 'mgemod_autodownload_sync')"
 # SOAP DM runs only under a competitive config. Without tournament mode no one
 # readies up, so it would never unload.
 if grep -Fqi 'SOAP' <<<"${plugin_output}"; then
@@ -356,6 +362,12 @@ fi
   grep -Fq "sm_cvar sm_map_download_base \"https://fastdl.example.invalid/maps/\"" /home/tf2/server/tf/cfg/server.cfg
   test -f /home/tf2/server/tf/cfg/sourcemod/sm_autoreload.cfg
   test ! -e /home/tf2/server/tf/cfg/sm_autoreload.cfg
+  test -f /home/tf2/server/tf/cfg/sourcemod/mgemod_config_downloader.cfg
+  # The first map start must already see sync off.
+  if grep -Fq "Syncing MGE config" /home/tf2/server/tf/addons/sourcemod/logs/L*.log; then
+    echo "MGE Config Downloader synced a config from GitHub" >&2
+    exit 1
+  fi
   grep -Fxq "https://example.invalid/motd/contract" /home/tf2/server/tf/cfg/motd.txt
   grep -Fq "motdfile_text \"cfg/motd_text.txt\"" /home/tf2/server/tf/cfg/server.cfg
   grep -Fxq "Reserve your own server at example.invalid" /home/tf2/server/tf/cfg/motd_text.txt
