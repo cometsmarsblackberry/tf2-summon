@@ -351,6 +351,16 @@ grep -Fq 'Wait For STV' <<<"${plugin_output}"
 "${container_runtime}" exec "${container_name}" \
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglqol.smx
 
+# soap_tf2dm refuses to load on MGE maps, so the MGE configs disable SOAP.
+"${rcon[@]}" 'sm_config 1v1mge' >/dev/null
+if grep -Fqi 'SOAP' <<<"$("${rcon[@]}" 'sm plugins list')"; then
+  echo "SOAP DM is still loaded under an MGE config" >&2
+  exit 1
+fi
+"${container_runtime}" exec "${container_name}" \
+  test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/soap_tournament.smx
+
+"${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
 "${rcon[@]}" 'sm_config summon_reset' >/dev/null
 if grep -Fqi 'SOAP' <<<"$("${rcon[@]}" 'sm plugins list')"; then
   echo "SOAP DM is still loaded after summon_reset" >&2
