@@ -181,6 +181,14 @@ terms in `/usr/share/doc/<package>/copyright`.
 - Source: https://github.com/mgetf/MGEMod/tree/v3.1.0-beta39; also installed
   in `tf/addons/sourcemod/scripting/`
 
+### MGE Config Downloader
+
+- Version: v1.4
+- Author: ampere
+- License: none published
+- Source: https://github.com/mgetf/mge-config-downloader/tree/v1.4; also
+  installed in `tf/addons/sourcemod/scripting/`
+
 ### F2's SourceMod Plugins
 
 - Version: 20260717-1784284363049

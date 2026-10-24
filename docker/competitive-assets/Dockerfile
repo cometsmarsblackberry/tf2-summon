@@ -32,6 +32,19 @@ ARG MGEMOD_CHECKSUM=069f7ad28d797c892a96133bbe7304c81175fbb82c5bc2209d7836324096
 ADD --checksum=sha256:${MGEMOD_CHECKSUM} ${MGEMOD_URL} .
 RUN unzip -q -n "${MGEMOD_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
+# MGE Config Downloader
+# Downloads the config of an MGE map that MGEMod has no config for. The release
+# also carries an mge.inc from a different MGEMod version, so only the plugin
+# and its source are installed.
+ARG MGE_CONFIG_DOWNLOADER_FILE_NAME=mge_config_downloader.zip
+ARG MGE_CONFIG_DOWNLOADER_VERSION=1.4
+ARG MGE_CONFIG_DOWNLOADER_URL=https://github.com/mgetf/mge-config-downloader/releases/download/v${MGE_CONFIG_DOWNLOADER_VERSION}/${MGE_CONFIG_DOWNLOADER_FILE_NAME}
+ARG MGE_CONFIG_DOWNLOADER_CHECKSUM=c7ada84a02f961b9a8199d24ef4543ed3c55eab007b75e56ce6658627a95f3d0
+ADD --checksum=sha256:${MGE_CONFIG_DOWNLOADER_CHECKSUM} ${MGE_CONFIG_DOWNLOADER_URL} .
+RUN unzip -q "${MGE_CONFIG_DOWNLOADER_FILE_NAME}" \
+  plugins/mge_config_downloader.smx scripting/mge_config_downloader.sp \
+  -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
+
 # F2's SourceMod Plugins
 ARG F2_SOURCEMOD_PLUGINS_FILE_NAME=f2-sourcemod-plugins.zip
 ARG F2_SOURCEMOD_PLUGINS_VERSION=20260717-1784284363049
