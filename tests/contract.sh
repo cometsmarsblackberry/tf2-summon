@@ -198,7 +198,10 @@ fi
   done </tmp/notice-licenses
 
   ldd /home/tf2/server/rcon | tee /tmp/rcon-ldd
-  ! grep -Fq "not found" /tmp/rcon-ldd
+  if grep -Fq "not found" /tmp/rcon-ldd; then
+    echo "rcon has unresolved shared libraries" >&2
+    exit 1
+  fi
 
   cfg_list="$(sh -lc "ls -1 /home/tf2/server/tf/cfg/*.cfg 2>/dev/null || true")"
   grep -Fq "/home/tf2/server/tf/cfg/summon_reset.cfg" <<<"${cfg_list}"
