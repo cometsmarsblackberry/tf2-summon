@@ -265,9 +265,9 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### Whitelist Downloader
 
-- Version: commit 333c5065514a6c5b2f11e57f8ef0bbe80ac28a74
+- Version: commit 6a1837dbd4f6432bb561a8278ede384471e22ab8
 - License: MIT (`licenses/robin-appelman.txt`)
-- Source: https://codeberg.org/spire/sm_whitelist/src/commit/333c5065514a6c5b2f11e57f8ef0bbe80ac28a74
+- Source: https://codeberg.org/spire/sm_whitelist/src/commit/6a1837dbd4f6432bb561a8278ede384471e22ab8
 
 ### SdrConnect
 

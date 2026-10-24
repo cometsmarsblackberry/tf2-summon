@@ -177,10 +177,13 @@ RUN cp "${DEMOSTF_PLUGIN_FILE_NAME}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plu
 # RUN cp "${AUTOEXEC_PLUGIN_FILE_NAME}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${AUTOEXEC_PLUGIN_FILE_NAME}"
 
 # Whitelist Downloader (pinned to commit)
-ARG WHITELISTTF_COMMIT=333c5065514a6c5b2f11e57f8ef0bbe80ac28a74
+# Pinned to v0.2. v0.3 (333c5065) downloads to a .part file and passes the paths to
+# RenameFile in the wrong order, so the whitelist is never renamed into place and
+# sm_whitelist_id leaves the server with no whitelist.
+ARG WHITELISTTF_COMMIT=6a1837dbd4f6432bb561a8278ede384471e22ab8
 ARG WHITELISTTF_PLUGIN_FILE_NAME=whitelisttf.smx
 ARG WHITELISTTF_PLUGIN_URL=https://codeberg.org/spire/sm_whitelist/raw/commit/${WHITELISTTF_COMMIT}/plugin/${WHITELISTTF_PLUGIN_FILE_NAME}
-ARG WHITELISTTF_PLUGIN_CHECKSUM=75a09e7e65fda6e03acb8acb7adff0695fc7dfb827f44a9e548a3b3640e8c0b5
+ARG WHITELISTTF_PLUGIN_CHECKSUM=70d93dff837d8828606b8387048eaf1296986e738bbec0f19412cc3df5dcde97
 ADD --checksum=sha256:${WHITELISTTF_PLUGIN_CHECKSUM} ${WHITELISTTF_PLUGIN_URL} .
 RUN cp "${WHITELISTTF_PLUGIN_FILE_NAME}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/${WHITELISTTF_PLUGIN_FILE_NAME}"
 
