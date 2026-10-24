@@ -233,15 +233,16 @@ terms in `/usr/share/doc/<package>/copyright`.
 - License: none published
 - Source: https://github.com/CoolstuffTF2/Ultitrio/tree/8d9381b94ea9c3865426268467a188a240270ed4
 
-### AsiaFortress, CLTF2, TFArena, and UFL configs (serveme)
+### AsiaFortress, CLTF2, MGE, TFArena, and UFL configs (serveme)
 
-- Version: commit 3c5f2bd9dce37d8f416881f93a87fbb7037c3efd of serveme
+- Version: commit 6ad5b714db14fe20a660c3812523732391cde5c2 of serveme
 - License: Apache-2.0, the license of the serveme repository
   (`licenses/Apache-2.0.txt`)
-- Source: https://github.com/Arie/serveme/tree/3c5f2bd9dce37d8f416881f93a87fbb7037c3efd/docker/tf2-cloud-server/base-configs/cfg
+- Source: https://github.com/Arie/serveme/tree/6ad5b714db14fe20a660c3812523732391cde5c2/docker/tf2-cloud-server/base-configs/cfg
 - Modifications: the build replaces the `servercfg` command with
-  `servercfgfile` in the CLTF2 and TFArena configs and marks each changed file
-  with a comment on its first line.
+  `servercfgfile` in the CLTF2 and TFArena configs, replaces the whitelist.tf
+  URL in `mp_tournament_whitelist` with `sm_whitelist_id` in the MGE configs,
+  and marks each changed file with a comment on its first line.
 
 ### Improved Match Timer
 
