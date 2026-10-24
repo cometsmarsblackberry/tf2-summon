@@ -158,6 +158,9 @@ fi
   test -f /home/tf2/server/tf/cfg/af_HL_koth.cfg
   test -f /home/tf2/server/tf/cfg/af_whitelist_HL.txt
   test -f /home/tf2/server/tf/cfg/cltf2_4s_koth.cfg
+  for cfg in 1v1mge 2v2mge; do
+    grep -q "^sm_whitelist_id [0-9]" "/home/tf2/server/tf/cfg/${cfg}.cfg"
+  done
   test -f /home/tf2/server/tf/cfg/tfarena_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/ufl_base.cfg
   test -z "$(grep -l "^servercfg[[:space:]]" /home/tf2/server/tf/cfg/*.cfg || true)"
@@ -268,6 +271,8 @@ plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
 grep -Fq 'MGE Config Auto-Downloader' <<<"${plugin_output}"
+# The MGE configs load their whitelist with sm_whitelist_id.
+grep -Fq 'whitelist.tf downloader' <<<"${plugin_output}"
 # With sync on, the downloader would replace the image's MGEMod configs with
 # MGEMod's master branch.
 grep -Fq '"mgemod_autodownload_sync" = "0"' <<<"$("${rcon[@]}" 'mgemod_autodownload_sync')"
