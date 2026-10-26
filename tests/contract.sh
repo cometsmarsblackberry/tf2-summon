@@ -253,6 +253,19 @@ done
 grep -Fq "hostname: Summon Contract Test" <<<"${status_output}"
 grep -Eq 'map[[:space:]]*:[[:space:]]*cp_badlands' <<<"${status_output}"
 
+# SourceTV starts with the first map, so fixstvslot never reloads it. RCON
+# answers only after server.cfg has run, and fixstvslot reloads one second
+# after server.cfg turns tv_enable on, so a reload would have started by now.
+sleep 3
+tv_status_output="$("${rcon[@]}" tv_status)"
+grep -Eq '^Online ' <<<"${tv_status_output}"
+grep -Fq 'Local Slots 32,' <<<"${tv_status_output}"
+if "${container_runtime}" exec "${container_name}" \
+  grep -rFq FixSTVSlot /home/tf2/server/tf/addons/sourcemod/logs/; then
+  echo "fixstvslot reloaded the map at boot" >&2
+  exit 1
+fi
+
 # Confirm that the configured wrapper launched the requested SRCDS ELF rather
 # than merely carrying both server architectures in the image.
 # shellcheck disable=SC2016

@@ -352,6 +352,10 @@ main() {
     steam_account_args=(+sv_setsteamaccount "${SERVER_TOKEN}")
   fi
 
+  # SourceTV must be on before the first map loads. Turned on by server.cfg
+  # instead, it starts only after a level change, which fixstvslot then forces
+  # on every boot. SourceTV reads tv_maxclients only when it starts, so the
+  # limit from server.cfg is set here as well.
   faketty "${SERVER_DIR}/${SRCDS_EXEC}" \
     -game tf \
     -secured \
@@ -365,6 +369,8 @@ main() {
     +clientport "${CLIENT_PORT}" \
     -steamport "${STEAM_PORT}" \
     +tv_port "${STV_PORT}" \
+    +tv_enable 1 \
+    +tv_maxclients 32 \
     -strictportbind \
     -norestart \
     "${srcds_args[@]}" & wait "$!"

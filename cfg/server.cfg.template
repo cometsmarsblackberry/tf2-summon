@@ -25,7 +25,8 @@ sv_allowupload 1
 // Map Downloader
 sm_cvar sm_map_download_base "${SM_MAP_DOWNLOAD_BASE}"
 
-// SourceTV
+// SourceTV. entrypoint.sh also sets tv_enable and tv_maxclients on the launch
+// line, because SourceTV reads them only when it starts.
 tv_enable 1
 tv_name "${STV_NAME}"
 tv_title "${STV_TITLE}"
