@@ -196,7 +196,7 @@ terms in `/usr/share/doc/<package>/copyright`.
 - License: none published
 - Source: https://github.com/F2/F2s-sourcemod-plugins/tree/20260717-1784284363049
 - Installed plugins: afk, fixstvslot, logstf, medicstats, pause, recordstv,
-  restorescore, supstats2, and waitforstv
+  restorescore, and supstats2
 
 ### ETF2L configs
 

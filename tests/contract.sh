@@ -165,6 +165,8 @@ fi
   test -f /home/tf2/server/tf/cfg/ufl_base.cfg
   test -z "$(grep -l "^servercfg[[:space:]]" /home/tf2/server/tf/cfg/*.cfg || true)"
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/spells_blocker.smx
+  # Summon holds map changes for SourceTV viewers itself.
+  test ! -e /home/tf2/server/tf/addons/sourcemod/plugins/waitforstv.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/mge.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/mge_config_downloader.smx
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/nextmap.smx
@@ -342,17 +344,15 @@ grep -Fq 'SOAP Tournament' <<<"${plugin_output}"
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/soap_tournament.smx
 
 # RGL's plugins run only under RGL configs, including roundtimer_override,
-# which RGL configs load from plugins/disabled/. RGL's QoL plugin unloads Wait
-# For STV, which Summon loads again when another league's config replaces it.
+# which RGL configs load from plugins/disabled/. Under RGL, the engine's
+# SourceTV map-change protection stays on as RGL's config sets it. Summon
+# turns it off under the other leagues' configs, which also set it.
 "${rcon[@]}" 'sm_config rgl_6s_5cp_match_half1' >/dev/null
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fq 'RGL.gg QoL Tweaks' <<<"${plugin_output}"
 grep -Fq 'Demo Check (No Discord)' <<<"${plugin_output}"
 grep -Fq 'Roundtimer Override' <<<"${plugin_output}"
-if grep -Fq 'Wait For STV' <<<"${plugin_output}"; then
-  echo "Wait For STV is still loaded under an RGL config" >&2
-  exit 1
-fi
+grep -Fq '"tv_delaymapchange_protect" = "1"' <<<"$("${rcon[@]}" tv_delaymapchange_protect)"
 
 "${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
@@ -360,7 +360,7 @@ if grep -Eq 'RGL\.gg|Config Checker|Demo Check|"Updater"|Roundtimer Override' <<
   echo "RGL plugins are still loaded under an ETF2L config" >&2
   exit 1
 fi
-grep -Fq 'Wait For STV' <<<"${plugin_output}"
+grep -Fq '"tv_delaymapchange_protect" = "0"' <<<"$("${rcon[@]}" tv_delaymapchange_protect)"
 "${container_runtime}" exec "${container_name}" \
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/rglqol.smx
 

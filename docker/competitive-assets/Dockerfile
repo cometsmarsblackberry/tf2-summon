@@ -51,7 +51,9 @@ ARG F2_SOURCEMOD_PLUGINS_VERSION=20260717-1784284363049
 ARG F2_SOURCEMOD_PLUGINS_URL=https://github.com/F2/F2s-sourcemod-plugins/releases/download/${F2_SOURCEMOD_PLUGINS_VERSION}/${F2_SOURCEMOD_PLUGINS_FILE_NAME}
 ARG F2_SOURCEMOD_PLUGINS_CHECKSUM=246b2522ee5b7467e247a621ff1fa4c53f735657ddc2f9a67747959de1ae59bd
 ADD --checksum=sha256:${F2_SOURCEMOD_PLUGINS_CHECKSUM} ${F2_SOURCEMOD_PLUGINS_URL} .
-ARG F2_ENABLED_PLUGINS="afk.smx fixstvslot.smx logstf.smx medicstats.smx pause.smx recordstv.smx restorescore.smx supstats2.smx waitforstv.smx"
+# The Summon plugin holds map changes for SourceTV viewers itself, so Wait For
+# STV is not installed.
+ARG F2_ENABLED_PLUGINS="afk.smx fixstvslot.smx logstf.smx medicstats.smx pause.smx recordstv.smx restorescore.smx supstats2.smx"
 RUN unzip -q -j "${F2_SOURCEMOD_PLUGINS_FILE_NAME}" ${F2_ENABLED_PLUGINS} \
   -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"
 
