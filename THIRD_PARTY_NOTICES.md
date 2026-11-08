@@ -67,7 +67,7 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### SourceMod
 
-- Version: 1.12.0-git7255 (release 1.12.0.7255)
+- Version: 1.12.0-git7260 (release 1.12.0.7260)
 - License: GPL-3.0 with the exceptions in `tf/addons/sourcemod/LICENSE.txt`
   (`licenses/GPL-3.0.txt`)
 - Source: https://github.com/alliedmodders/sourcemod; the `sm version` server
@@ -176,9 +176,9 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### MGEMod
 
-- Version: v3.1.0-beta39
+- Version: v3.1.0-beta42
 - License: GPL-3.0 (`licenses/GPL-3.0.txt`)
-- Source: https://github.com/mgetf/MGEMod/tree/v3.1.0-beta39; also installed
+- Source: https://github.com/mgetf/MGEMod/tree/v3.1.0-beta42; also installed
   in `tf/addons/sourcemod/scripting/`
 
 ### MGE Config Downloader
@@ -200,9 +200,9 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### ETF2L configs
 
-- Version: 1.0.29
+- Version: 1.0.30
 - License: MIT (`licenses/etf2l-gameserver-configs.txt`)
-- Source: https://github.com/ETF2L/gameserver-configs/tree/1.0.29
+- Source: https://github.com/ETF2L/gameserver-configs/tree/1.0.30
 
 ### FBTF configs
 
