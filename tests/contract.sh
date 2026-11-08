@@ -161,6 +161,7 @@ fi
   for cfg in 1v1mge 2v2mge; do
     grep -q "^sm_whitelist_id [0-9]" "/home/tf2/server/tf/cfg/${cfg}.cfg"
   done
+  grep -q "^sm_whitelist_id [0-9]" /home/tf2/server/tf/cfg/kotf.cfg
   test -f /home/tf2/server/tf/cfg/tfarena_6v6_5cp.cfg
   test -f /home/tf2/server/tf/cfg/ufl_base.cfg
   test -z "$(grep -l "^servercfg[[:space:]]" /home/tf2/server/tf/cfg/*.cfg || true)"

@@ -21,6 +21,7 @@ required_files=(
   docker/competitive-assets/Dockerfile
   docker/sigsegv/Dockerfile
   docker/sigsegv/sigsegv_convars.cfg
+  cfg/kotf.cfg
   cfg/server.cfg.template
   cfg/summon_reset.cfg
   plugins/autoreload.smx
