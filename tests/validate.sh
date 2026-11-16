@@ -81,6 +81,12 @@ test "$(grep -Fc 'summon-plugin                 = SUMMON_PLUGIN_SOURCE' docker-b
 grep -Fq 'COPY --from=summon-plugin scripting/ scripting/' Dockerfile
 
 grep -Fqx '    "changelevel"' sourcemod/configs/summon_owner_commands.cfg
+# Owners may turn sv_cheats on, which Summon makes safe by holding this
+# setting. Listing it would let them undo that.
+if grep -Fq '"sv_allow_point_servercommand"' sourcemod/configs/summon_owner_commands.cfg; then
+  echo "summon_owner_commands.cfg must not list sv_allow_point_servercommand" >&2
+  exit 1
+fi
 
 grep -Fqx 'FROM tf2-summon-base' docker/sourcemod/Dockerfile
 grep -Fqx 'FROM tf2-summon-sourcemod' docker/core-addons/Dockerfile

@@ -375,9 +375,63 @@ fi
   test -f /home/tf2/server/tf/addons/sourcemod/plugins/disabled/soap_tournament.smx
 
 "${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
+# summon_reset also restores settings that owners can change and no league
+# config sets.
+"${rcon[@]}" 'sv_friction 2; tf_bot_difficulty 3' >/dev/null
+# Summon removes bots on a reset, including one outside the quota, which the
+# config's tf_bot_quota 0 leaves. SourceTV is a bot too and must stay.
+"${rcon[@]}" 'tf_bot_add 1 soldier red easy ContractBot noquota' >/dev/null
+deadline=$((SECONDS + 30))
+until grep -Fq '"ContractBot"' <<<"$("${rcon[@]}" status)"; do
+  if (( SECONDS >= deadline )); then
+    echo "The test bot did not join within 30 seconds" >&2
+    exit 1
+  fi
+  sleep 1
+done
 "${rcon[@]}" 'sm_config summon_reset' >/dev/null
 if grep -Fqi 'SOAP' <<<"$("${rcon[@]}" 'sm plugins list')"; then
   echo "SOAP DM is still loaded after summon_reset" >&2
+  exit 1
+fi
+grep -Fq '"sv_friction" = "4"' <<<"$("${rcon[@]}" sv_friction)"
+grep -Fq '"tf_bot_difficulty" = "1"' <<<"$("${rcon[@]}" tf_bot_difficulty)"
+deadline=$((SECONDS + 30))
+while grep -Fq '"ContractBot"' <<<"$("${rcon[@]}" status)"; do
+  if (( SECONDS >= deadline )); then
+    echo "summon_reset did not remove the test bot within 30 seconds" >&2
+    exit 1
+  fi
+  sleep 1
+done
+grep -Fq '"SourceTV"' <<<"$("${rcon[@]}" status)"
+
+# The owner-command allowlist offers sv_cheats. With cheats on, every player
+# can create entities and run scripts, and on a Valve map such as this one
+# those can run any server command. Summon must block that while cheats are
+# on and afterwards, until the map changes. The first check shows that a
+# script reaches the server console when nothing blocks it.
+"${container_runtime}" exec "${container_name}" \
+  grep -Fqx '    "sv_cheats"' /home/tf2/server/tf/addons/sourcemod/configs/summon_owner_commands.cfg
+"${rcon[@]}" 'script SendToServerConsole("mp_chattime 11")' >/dev/null
+grep -Fq '"mp_chattime" = "11"' <<<"$("${rcon[@]}" mp_chattime)"
+cheats_output="$("${rcon[@]}" 'sm_summon_owner_command 76561198000000000 sv_cheats 1')"
+grep -Fq 'SUMMON_OWNER_COMMAND_RESULT OK' <<<"${cheats_output}"
+grep -Fq '"sv_cheats" = "1"' <<<"$("${rcon[@]}" sv_cheats)"
+"${rcon[@]}" 'sv_allow_point_servercommand official' >/dev/null
+"${rcon[@]}" 'script SendToServerConsole("mp_chattime 12")' >/dev/null
+grep -Fq '"mp_chattime" = "11"' <<<"$("${rcon[@]}" mp_chattime)"
+# Owner commands share a one-second cooldown.
+sleep 2
+"${rcon[@]}" 'sm_summon_owner_command 76561198000000000 sv_cheats 0' >/dev/null
+grep -Fq '"sv_cheats" = "0"' <<<"$("${rcon[@]}" sv_cheats)"
+"${rcon[@]}" 'script SendToServerConsole("mp_chattime 13")' >/dev/null
+grep -Fq '"mp_chattime" = "11"' <<<"$("${rcon[@]}" mp_chattime)"
+"${rcon[@]}" 'mp_chattime 10' >/dev/null
+# StAC stops itself when cheats are turned on. Summon reloads it afterwards.
+stac_output="$("${rcon[@]}" 'sm plugins list' | grep -F 'StAC')"
+if grep -Fq '<Failed>' <<<"${stac_output}"; then
+  echo "StAC was not reloaded after sv_cheats was turned off" >&2
   exit 1
 fi
 
