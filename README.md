@@ -11,7 +11,7 @@ the RCON client the Summon agent uses.
 | Image | Description |
 | --- | --- |
 | `ghcr.io/cometsmarsblackberry/tf2-summon/i386:nightly` | 32-bit SRCDS. Summon's default. |
-| `ghcr.io/cometsmarsblackberry/tf2-summon/amd64:nightly` | Native 64-bit SRCDS. Plugins that need 32-bit-only extensions are unavailable. |
+| `ghcr.io/cometsmarsblackberry/tf2-summon/amd64:nightly` | Native 64-bit SRCDS. Plugins that need 32-bit-only extensions, including StAC, are unavailable. |
 | `ghcr.io/cometsmarsblackberry/tf2-summon/i386-sigsegv:nightly` | Experimental. `/i386` plus the Optimize-Only package of [sigsegv-mvm](https://github.com/potato-tf/sigsegv-mvm), which reduces server CPU usage. It can break after a TF2 update until upstream releases a fix. |
 
 All images are `linux/amd64`. The image name without a suffix is an alias for

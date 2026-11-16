@@ -287,6 +287,10 @@ plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fqi 'Summon' <<<"${plugin_output}"
 grep -Fqi 'Map Downloader' <<<"${plugin_output}"
 grep -Fq 'MGE Config Auto-Downloader' <<<"${plugin_output}"
+# StAC's bundled native dependencies are only available on 32-bit servers.
+if [ "${server_arch}" = i386 ]; then
+  grep -Eq '^ *[0-9]+ "[^"]*StAC' <<<"${plugin_output}"
+fi
 # The MGE configs load their whitelist with sm_whitelist_id.
 grep -Fq 'whitelist.tf downloader' <<<"${plugin_output}"
 # With sync on, the downloader would replace the image's MGEMod configs with
@@ -428,11 +432,11 @@ grep -Fq '"sv_cheats" = "0"' <<<"$("${rcon[@]}" sv_cheats)"
 "${rcon[@]}" 'script SendToServerConsole("mp_chattime 13")' >/dev/null
 grep -Fq '"mp_chattime" = "11"' <<<"$("${rcon[@]}" mp_chattime)"
 "${rcon[@]}" 'mp_chattime 10' >/dev/null
-# StAC stops itself when cheats are turned on. Summon reloads it afterwards.
-stac_output="$("${rcon[@]}" 'sm plugins list' | grep -F 'StAC')"
-if grep -Fq '<Failed>' <<<"${stac_output}"; then
-  echo "StAC was not reloaded after sv_cheats was turned off" >&2
-  exit 1
+# On 32-bit servers, StAC stops itself when cheats are turned on. Summon
+# reloads it afterwards. The 64-bit image lacks StAC's native dependencies.
+if [ "${server_arch}" = i386 ]; then
+  stac_output="$("${rcon[@]}" 'sm plugins list')"
+  grep -Eq '^ *[0-9]+ "[^"]*StAC' <<<"${stac_output}"
 fi
 
 # The quoted script expands variables inside the container, not in this shell.
