@@ -356,6 +356,13 @@ gateway_refuses() {
   grep -Fq "SUMMON_OWNER_COMMAND_RESULT ERROR $2" <<<"$(gateway "$1")"
 }
 gateway_ok status
+# Lobby sites check a server with hostname, status, and users. The name can
+# be read but not changed.
+gateway_ok hostname
+grep -Fq '"hostname" = ' <<<"$(gateway hostname)"
+gateway_ok users
+gateway_refuses 'hostname renamed' invalid_arguments
+gateway_refuses 'users 1' invalid_arguments
 gateway_ok 'mp_timelimit'
 gateway_ok 'say Contract test'
 gateway_ok 'kickid STEAM_0:1:12345'
