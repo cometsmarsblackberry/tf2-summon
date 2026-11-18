@@ -341,6 +341,56 @@ grep -Eq 'Loaded [1-9][0-9]* reservation-owner commands\.' <<<"${owner_commands_
 "${rcon[@]}" 'sm_reserve_backend_url "https://example.invalid"' >/dev/null
 "${rcon[@]}" 'sm_reserve_api_key "contract-key"' >/dev/null
 
+# The Summon agent's RCON gateway gives reservation owners' remote tools,
+# such as lobby sites, a restricted RCON with the owner-command allowlist. It
+# reaches the game server's own RCON through bash's /dev/tcp inside the
+# container.
+"${container_runtime}" exec "${container_name}" bash -c 'exec 3<>/dev/tcp/127.0.0.1/27015'
+gateway() {
+  "${rcon[@]}" "sm_summon_rcon_command 76561198000000000 $1"
+}
+gateway_ok() {
+  grep -Fq 'SUMMON_OWNER_COMMAND_RESULT OK' <<<"$(gateway "$1")"
+}
+gateway_refuses() {
+  grep -Fq "SUMMON_OWNER_COMMAND_RESULT ERROR $2" <<<"$(gateway "$1")"
+}
+gateway_ok status
+gateway_ok 'mp_timelimit'
+gateway_ok 'say Contract test'
+gateway_ok 'kickid STEAM_0:1:12345'
+gateway_refuses 'rcon_password changed' command_not_allowed
+gateway_refuses 'sm plugins list' command_not_allowed
+gateway_refuses 'exec server' unknown_config
+gateway_refuses 'sv_password ""' invalid_arguments
+gateway_refuses 'log off' invalid_arguments
+# Log packets come from the server's own address, so receivers need a
+# reservation whose address is public.
+grep -Fq 'need a reservation with direct connections' \
+  <<<"$(gateway 'logaddress_add 203.0.113.5:27500')"
+"${rcon[@]}" 'sm_reserve_direct_connect 1' >/dev/null
+gateway_refuses 'logaddress_add 127.0.0.1:27500' invalid_arguments
+gateway_refuses 'logaddress_add 10.0.0.1:27500' invalid_arguments
+gateway_refuses 'logaddress_add example.invalid:27500' invalid_arguments
+gateway_ok 'logaddress_add 203.0.113.5:27500'
+grep -Fq '203.0.113.5:27500' <<<"$(gateway logaddress_list)"
+for receiver in 2 3 4; do
+  gateway_ok "logaddress_add 203.0.113.${receiver}:27500"
+done
+gateway_refuses 'logaddress_add 203.0.113.9:27500' invalid_arguments
+gateway_ok logaddress_delall
+gateway_ok 'logaddress_add 203.0.113.9:27500'
+gateway_ok logaddress_delall
+stv_userid="$("${rcon[@]}" status | sed -n 's/^# *\([0-9][0-9]*\) "SourceTV".*/\1/p')"
+[ -n "${stv_userid}" ]
+gateway_refuses "kickid ${stv_userid}" invalid_arguments
+# The web console shares the allowlist. Run over RCON, a command prints its
+# output after the plugin's result marker, so the web console and the RCON
+# gateway mask the addresses in status themselves.
+owner_status="$("${rcon[@]}" 'sm_summon_owner_command 76561198000000000 status')"
+grep -Fq 'SUMMON_OWNER_COMMAND_RESULT OK' <<<"${owner_status}"
+grep -Fq '"SourceTV"' <<<"$(sed -n '/SUMMON_OWNER_COMMAND_RESULT OK/,$p' <<<"${owner_status}")"
+
 "${rcon[@]}" 'sm_config etf2l_6v6_5cp' >/dev/null
 plugin_output="$("${rcon[@]}" 'sm plugins list')"
 grep -Fq 'SOAP TF2 Deathmatch' <<<"${plugin_output}"
