@@ -104,6 +104,18 @@ terms in `/usr/share/doc/<package>/copyright`.
 - Source: https://github.com/sapphonie/StAC-tf2/tree/v6.3.13; also installed
   in `tf/addons/sourcemod/scripting/`
 
+### SourceTV Manager
+
+- Version: v1.3-beta2, installed in place of the copy in StAC's release
+- License: GPL-3.0 (`licenses/GPL-3.0.txt`)
+- Source: https://github.com/peace-maker/sourcetvmanager/tree/v1.3-beta2
+- Bundled in `sourcetvmanager.ext.2.tf2.so`:
+  - SafetyHook, commit 8c6692c85a6c41f5d89f744da57b5ba43515b4ec: BSL-1.0
+    (`licenses/BSL-1.0.txt`), source
+    https://github.com/alliedmodders/safetyhook/tree/8c6692c85a6c41f5d89f744da57b5ba43515b4ec
+  - Zydis 4.0.0: MIT (`licenses/zydis.txt`)
+  - Zycore 1401fb85ac313f6605ec795c52bf99ea3f292a69: MIT (`licenses/zycore.txt`)
+
 ### REST in Pawn (sm-ripext)
 
 - Version: 1.3.2

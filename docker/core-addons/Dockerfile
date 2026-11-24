@@ -37,6 +37,20 @@ ARG STAC_CHECKSUM=2bcbd1930439cf1924242808b443a7f2618242c3612623fc2e6222b3365ad3
 ADD --checksum=sha256:${STAC_CHECKSUM} ${STAC_URL} .
 RUN unzip -q -o "${STAC_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
+# SourceTV Manager, replacing the older copy in StAC's release. Since TF2 build
+# 11267535 the 32-bit engine is position-independent code, and the older copy's
+# gamedata finds the demo recorder at the wrong place, so srcds crashes when
+# StAC unloads. Only the 32-bit TF2 extension and its gamedata are installed,
+# as StAC's release ships them.
+ARG SOURCETVMANAGER_VERSION=v1.3-beta2
+ARG SOURCETVMANAGER_FILE_NAME=sourcetvmanager-sm1.12-linux-${SOURCETVMANAGER_VERSION}.tar.gz
+ARG SOURCETVMANAGER_URL=https://github.com/peace-maker/sourcetvmanager/releases/download/${SOURCETVMANAGER_VERSION}/${SOURCETVMANAGER_FILE_NAME}
+ARG SOURCETVMANAGER_CHECKSUM=17c4e83c2d5d8866c323814b7d8d48f94a697b806feff32ad5741cb24270dd8c
+ADD --checksum=sha256:${SOURCETVMANAGER_CHECKSUM} ${SOURCETVMANAGER_URL} .
+RUN tar xzf "${SOURCETVMANAGER_FILE_NAME}" -C "${PLUGIN_INSTALL_DIR}/" \
+      addons/sourcemod/extensions/sourcetvmanager.ext.2.tf2.so \
+      addons/sourcemod/gamedata/sourcetvmanager.games.txt
+
 # sm-ripext (REST in Pawn Extension)
 ARG RIPEXT_FILE_NAME=sm-ripext-1.3.2-linux.zip
 ARG RIPEXT_VERSION=1.3.2
