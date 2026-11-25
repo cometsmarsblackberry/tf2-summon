@@ -128,8 +128,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 WORKDIR /compile
 
 # Download SourceMod for the compiler (use latest stable)
-ARG SOURCEMOD_URL=https://github.com/alliedmodders/sourcemod/releases/download/1.12.0.7260/sourcemod-1.12.0-git7260-linux.tar.gz
-ARG SOURCEMOD_CHECKSUM=b01719e6143bc7d5bb63aae8086d031574da6ef838f041ba4b8ab72c8c75b888
+ARG SOURCEMOD_URL=https://github.com/alliedmodders/sourcemod/releases/download/1.12.0.7263/sourcemod-1.12.0-git7263-linux.tar.gz
+ARG SOURCEMOD_CHECKSUM=42b2289a0089790661714d661b389135151fd926d309848565e2f7e64f8e7983
 RUN wget -q "${SOURCEMOD_URL}" -O sourcemod.tar.gz \
     && echo "${SOURCEMOD_CHECKSUM}  sourcemod.tar.gz" | sha256sum -c - \
     && mkdir -p /sourcemod \

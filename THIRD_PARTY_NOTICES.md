@@ -67,7 +67,7 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### SourceMod
 
-- Version: 1.12.0-git7260 (release 1.12.0.7260)
+- Version: 1.12.0-git7263 (release 1.12.0.7263)
 - License: GPL-3.0 with the exceptions in `tf/addons/sourcemod/LICENSE.txt`
   (`licenses/GPL-3.0.txt`)
 - Source: https://github.com/alliedmodders/sourcemod; the `sm version` server
