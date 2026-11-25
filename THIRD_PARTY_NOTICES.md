@@ -60,7 +60,7 @@ terms in `/usr/share/doc/<package>/copyright`.
 
 ### Metamod:Source
 
-- Version: 1.12.0-git1228 (release 1.12.0.1228)
+- Version: 1.12.0-git1231 (release 1.12.0.1231)
 - License: zlib/libpng (`licenses/metamod-source.txt`)
 - Source: https://github.com/alliedmodders/metamod-source; the `meta version`
   server command prints the commit the build was made from
