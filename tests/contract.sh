@@ -367,6 +367,18 @@ gateway_refuses 'hostname renamed' invalid_arguments
 gateway_refuses 'users 1' invalid_arguments
 gateway_refuses 'maxplayers 32' invalid_arguments
 gateway_refuses 'tv_status 1' invalid_arguments
+# They also look for their map in "maps *". Summon answers in the engine's
+# format with the maps on disk and the backend's catalog. This test has no
+# backend, so only the startup map is listed.
+maps_output="$(gateway 'maps *')"
+grep -Fq 'SUMMON_OWNER_COMMAND_RESULT OK' <<<"${maps_output}"
+grep -Fq 'PENDING:   (fs) cp_badlands' <<<"${maps_output}"
+grep -Fq 'PENDING:   (fs) cp_badlands' <<<"$(gateway 'maps BADLANDS')"
+if grep -Fq 'PENDING:' <<<"$(gateway 'maps koth_')"; then
+  echo "maps listed a map that does not match" >&2
+  exit 1
+fi
+gateway_refuses 'maps cp_ badlands' invalid_arguments
 gateway_ok 'mp_timelimit'
 gateway_ok 'say Contract test'
 gateway_ok 'kickid STEAM_0:1:12345'
