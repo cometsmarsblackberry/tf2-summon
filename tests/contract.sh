@@ -395,6 +395,16 @@ grep -Fq 'need a reservation with direct connections' \
 gateway_refuses 'logaddress_add 127.0.0.1:27500' invalid_arguments
 gateway_refuses 'logaddress_add 10.0.0.1:27500' invalid_arguments
 gateway_refuses 'logaddress_add example.invalid:27500' invalid_arguments
+gateway_refuses 'logaddress_add localhost:27500' invalid_arguments
+gateway_refuses 'logaddress_add bad_name.example.com:27500' invalid_arguments
+gateway_refuses 'logaddress_add logs.example.com:70000' invalid_arguments
+gateway_refuses 'logaddress_add logs.example.com:27500 extra' invalid_arguments
+# A host name is looked up in the background, and the engine only gets the
+# address. This name has no address, so nothing is added, and the delete
+# stops the lookup or finds no receiver, whichever comes first.
+grep -Fq 'Looking up logs.example.com.' \
+  <<<"$(gateway 'logaddress_add logs.example.com:27500')"
+gateway_ok 'logaddress_del logs.example.com:27500'
 gateway_ok 'logaddress_add 203.0.113.5:27500'
 grep -Fq '203.0.113.5:27500' <<<"$(gateway logaddress_list)"
 for receiver in 2 3 4; do
